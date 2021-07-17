@@ -23,16 +23,18 @@ const (
 	addreddChechsumLen = 4
 	privKeyBytesLen    = 32
 )
-
+// ECC ECC结构
 type ECC struct {
 	GKey *GKey
 }
 
+// GKey ECC密钥
 type GKey struct {
 	privateKey *ecdsa.PrivateKey
 	PublicKey  ecdsa.PublicKey
 }
 
+// NewECC 创建一个ECC
 func NewECC() *ECC {
 	gkey, err := MakeNewKey()
 	if err != nil {
@@ -42,6 +44,7 @@ func NewECC() *ECC {
 	return &ECC{gkey}
 }
 
+// GetPrivKey 获取私钥
 func (k GKey) GetPrivKey() []byte {
 	d := k.privateKey.D.Bytes()
 	b := make([]byte, 0, privKeyBytesLen)
@@ -49,17 +52,15 @@ func (k GKey) GetPrivKey() []byte {
 	// s := byteToString(priKey)
 	return priKey
 }
-
+// GetPubKey 获取公钥
 func (k GKey) GetPubKey() []byte {
 	pubKey := append(k.PublicKey.X.Bytes(), k.privateKey.Y.Bytes()...) // []bytes type
 	// s := byteToString(pubKey)
 	return pubKey
 }
 
-/*
-对text签名
-返回加密结果，结果为数字证书r、s的序列化后拼接，然后用hex转换为string
-*/
+
+// Sign 对text签名,返回加密结果，结果为数字证书r、s的序列化后拼接，然后用hex转换为string
 func (e ECC) Sign(text []byte) (string, error) {
 	r, s, err := ecdsa.Sign(rand.Reader, e.GKey.privateKey, text)
 	if err != nil {
@@ -112,10 +113,8 @@ func (e ECC) GetAddress() (address string) {
 	return address
 }
 
-/*
-证书分解
-通过hex解码，分割成数字证书r，s
-*/
+
+// getSign 证书分解,通过hex解码，分割成数字证书r，s
 func (e ECC) getSign(signature string) (rint, sint big.Int, err error) {
 	byterun, err := hex.DecodeString(signature)
 	if err != nil {
@@ -153,10 +152,7 @@ func (e ECC) getSign(signature string) (rint, sint big.Int, err error) {
 	return
 }
 
-/*
-校验文本内容是否与签名一致
-使用公钥校验签名和文本内容
-*/
+// Verify 校验文本内容是否与签名一致,使用公钥校验签名和文本内容
 func (e ECC) Verify(text []byte, signature string, pubKey *ecdsa.PublicKey) (bool, error) {
 	rint, sint, err := e.getSign(signature)
 	if err != nil {
