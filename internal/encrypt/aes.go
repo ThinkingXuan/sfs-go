@@ -5,10 +5,16 @@ import (
 	"crypto/cipher"
 )
 
-// Aes加密算法
+// Aes 加密算法
+type Aes struct {
+}
+
+func NewAes() *Aes {
+	return &Aes{}
+}
 
 // AESEncrypt AES加密
-func AESEncrypt(plainText []byte, key []byte) ([]byte, error) {
+func (a *Aes) AESEncrypt(plainText []byte, key []byte) ([]byte, error) {
 	var iv = key[:aes.BlockSize]
 	encrypted := make([]byte, len(plainText))
 	block, err := aes.NewCipher(key)
@@ -21,7 +27,7 @@ func AESEncrypt(plainText []byte, key []byte) ([]byte, error) {
 }
 
 // AESDecrypt AES解密
-func AESDecrypt(cipherText []byte, key []byte) ([]byte, error) {
+func (a *Aes) AESDecrypt(cipherText []byte, key []byte) ([]byte, error) {
 	var err error
 	defer func() {
 		if e := recover(); e != nil {

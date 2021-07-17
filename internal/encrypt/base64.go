@@ -15,7 +15,7 @@ func Base64Encode(data string) string {
 	return coder.EncodeToString(content)
 }
 
-// Base64Encode MD5解码
+// Base64Decode MD5解码
 func Base64Decode(data string) string {
 	coder := base64.NewEncoding(BASE64Table)
 	result, _ := coder.DecodeString(data)

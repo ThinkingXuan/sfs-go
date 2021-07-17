@@ -6,8 +6,16 @@ import (
 	"errors"
 )
 
+// Des Des加密算法
+type Des struct {
+}
+
+func NewDes() *Des {
+	return &Des{}
+}
+
 // DESEncrypt DES加密
-func DESEncrypt(plainText []byte, key []byte) ([]byte, error) {
+func (d *Des) DESEncrypt(plainText []byte, key []byte) ([]byte, error) {
 
 	block, err := des.NewCipher(key)
 	if err != nil {
@@ -29,7 +37,7 @@ func DESEncrypt(plainText []byte, key []byte) ([]byte, error) {
 }
 
 // DESDecrypt DES解密
-func DESDecrypt(cipherText []byte, key []byte) ([]byte, error) {
+func (d *Des) DESDecrypt(cipherText []byte, key []byte) ([]byte, error) {
 
 	block, err := des.NewCipher(key)
 	if err != nil {
