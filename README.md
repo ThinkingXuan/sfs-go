@@ -7,4 +7,4 @@ Secure file sharing system based on blockchain 基于区块链的安全文件共
 3. Fabric搭建和复习（远程服务器）
 4. 代理重加密
 5. 文件签名
-6. 地址生成
+6. 地址生成 ✔
