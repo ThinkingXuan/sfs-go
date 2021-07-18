@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	shell "github.com/ipfs/go-ipfs-api"
+	"github.com/spf13/viper"
 	"io/ioutil"
 )
 
 // DownFile 连接ipfs进行下载操作
 func DownFile(fileHash string) ([]byte, error) {
-	iPAddr := ""
+	iPAddr := viper.GetString("ipfs_ip")
 	sh := shell.NewShell(iPAddr + ":5001")
 	fmt.Println("下载文件哈希值：" + fileHash)
 	//从ipfs下载数据
@@ -24,7 +25,7 @@ func DownFile(fileHash string) ([]byte, error) {
 
 // UploadFileToIPFS 上传文件到IPFS
 func UploadFileToIPFS(filename string) (string, error) {
-	iPAddr := ""
+	iPAddr := viper.GetString("ipfs_ip")
 	sh := shell.NewShell(iPAddr + ":5001")
 
 	file, err := ioutil.ReadFile(filename)
