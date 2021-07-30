@@ -23,6 +23,7 @@ const (
 	addreddChechsumLen = 4
 	privKeyBytesLen    = 32
 )
+
 // ECC ECC结构
 type ECC struct {
 	GKey *GKey
@@ -52,13 +53,13 @@ func (k GKey) GetPrivKey() []byte {
 	// s := byteToString(priKey)
 	return priKey
 }
+
 // GetPubKey 获取公钥
 func (k GKey) GetPubKey() []byte {
 	pubKey := append(k.PublicKey.X.Bytes(), k.privateKey.Y.Bytes()...) // []bytes type
 	// s := byteToString(pubKey)
 	return pubKey
 }
-
 
 // Sign 对text签名,返回加密结果，结果为数字证书r、s的序列化后拼接，然后用hex转换为string
 func (e ECC) Sign(text []byte) (string, error) {
@@ -91,28 +92,27 @@ func (e ECC) GetAddress() (address string) {
 	pub_bytes := e.GKey.GetPubKey()
 
 	/* SHA256 HASH */
-	fmt.Println("1 - Perform SHA-256 hashing on the public key")
+	//fmt.Println("1 - Perform SHA-256 hashing on the public key")
 	sha256_h := sha256.New()
 	sha256_h.Reset()
 	sha256_h.Write(pub_bytes)
 	pub_hash_1 := sha256_h.Sum(nil) // 对公钥进行hash256运算
-	fmt.Println(ByteToString(pub_hash_1))
-	fmt.Println("================")
+	//fmt.Println(ByteToString(pub_hash_1))
+	//fmt.Println("================")
 
 	/* RIPEMD-160 HASH */
-	fmt.Println("2 - Perform RIPEMD-160 hashing on the result of SHA-256")
+	//fmt.Println("2 - Perform RIPEMD-160 hashing on the result of SHA-256")
 	ripemd160_h := ripemd160.New()
 	ripemd160_h.Reset()
 	ripemd160_h.Write(pub_hash_1)
 	pub_hash_2 := ripemd160_h.Sum(nil) // 对公钥hash进行ripemd160运算
-	fmt.Println(ByteToString(pub_hash_2))
-	fmt.Println("================")
+	//fmt.Println(ByteToString(pub_hash_2))
+	//fmt.Println("================")
 	/* Convert hash bytes to base58 chech encoded sequence */
 	address = b58checkencode(0x00, pub_hash_2)
 
 	return address
 }
-
 
 // getSign 证书分解,通过hex解码，分割成数字证书r，s
 func (e ECC) getSign(signature string) (rint, sint big.Int, err error) {
