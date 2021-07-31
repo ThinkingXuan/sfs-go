@@ -2,10 +2,10 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"log"
 	"os"
 )
 
@@ -23,7 +23,7 @@ with speed and efficiency.`,
 // Execute execute root cmd
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 }
@@ -61,7 +61,7 @@ func initConfig() {
 		// 找到home文件
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			os.Exit(1)
 		}
 		// 在home文件夹中搜索以“.cobra”为名称的config
@@ -73,6 +73,6 @@ func initConfig() {
 	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Can not read config:", viper.ConfigFileUsed())
+		log.Println("Can not read config:", viper.ConfigFileUsed())
 	}
 }
