@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/cheggaaa/pb/v3 v3.0.8
 	github.com/ethereum/go-ethereum v1.10.5
+	github.com/hyperledger/fabric-sdk-go v1.0.0
 	github.com/ipfs/go-ipfs-api v0.2.0
 	github.com/klauspost/cpuid/v2 v2.0.8 // indirect
 	github.com/libp2p/go-libp2p-core v0.8.6 // indirect
