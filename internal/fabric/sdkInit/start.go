@@ -5,7 +5,6 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-	"log"
 )
 
 const ChaincodeVersion = "1.0"
@@ -19,7 +18,7 @@ func SetupSDK(ConfigFile string, initialized bool) (*fabsdk.FabricSDK, error) {
 	if err != nil {
 		return nil, fmt.Errorf("实例化Fabric SDK失败: %v", err)
 	}
-	log.Println("Fabric SDK初始化成功")
+	//log.Println("Fabric SDK初始化成功")
 	return sdk, nil
 }
 
@@ -31,7 +30,7 @@ func InstallAndInstantiateCC(sdk *fabsdk.FabricSDK, info *InitInfo) (*channel.Cl
 	if err != nil {
 		return nil, fmt.Errorf("创建应用通道客户端失败: %v", err)
 	}
-	log.Println("通道客户端创建成功，可以利用此客户端调用链码进行查询或执行事务.")
+	//log.Println("通道客户端创建成功，可以利用此客户端调用链码进行查询或执行事务.")
 
 	return channelClient, nil
 }

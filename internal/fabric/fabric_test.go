@@ -14,7 +14,6 @@ func TestFabricConn(t *testing.T) {
 
 func TestFabricQueryPk(t *testing.T) {
 	service := sdkInit.GetInstance().InitFabric()
-
 	pkBytes, err := service.GetPublicKey("1234567890")
 	if err != nil {
 		t.Error(err)

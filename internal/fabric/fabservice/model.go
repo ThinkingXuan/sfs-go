@@ -13,7 +13,7 @@ type AddressFile struct {
 
 // File file info
 type File struct {
-	FileID   string `json:"file_id"`
+	FileID   string `json:"file_id,omitempty"`
 	FileName string `json:"file_name"`
 	FileType string `json:"file_type"`
 	FileSize string `json:"file_size"`

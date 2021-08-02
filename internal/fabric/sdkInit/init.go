@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	configFile  = "sdkInit/config.yaml"
+	configFile  = "internal/fabric/sdkInit/config.yaml"
 	initialized = false
 	SimpleCC    = "sfscc"
 )

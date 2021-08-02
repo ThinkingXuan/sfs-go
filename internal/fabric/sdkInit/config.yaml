@@ -17,7 +17,7 @@ client:
     level: info
 
   cryptoconfig:
-    path: ./fixtures/crypto-config
+    path: internal/fabric/fixtures/crypto-config
 
   credentialStore:
     path: /tmp/success-store
@@ -129,7 +129,7 @@ organizations:
       - ca.org1.example.com
   Org2:
     mspid: Org2MSP
-    cryptoPath: peerOrganizations/org1.example.com/users/{userName}@org1.example.com/msp
+    cryptoPath: peerOrganizations/org1.example.com/users/{userName}@org2.example.com/msp
     peers:
       - peer0.org2.example.com
       - peer1.org2.example.com
@@ -154,14 +154,14 @@ orderers:
 
     tlsCACerts:
       # Certificate location absolute path
-      path: ./fixtures/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+      path: internal/fabric/fixtures/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
 
 peers:
   peer0.org1.example.com:
     # this URL is used to send endorsement and query requests
     url: 192.168.44.128:7051
     # eventUrl is only needed when using eventhub (default is delivery fabservice)
-    eventUrl: 192.168.44.128:7053
+    eventUrl: 192.168.44.129:7053
 
     grpcOptions:
       ssl-target-name-override: peer0.org1.example.com
@@ -174,13 +174,13 @@ peers:
 
     tlsCACerts:
       # Certificate location absolute path
-      path: ./fixtures/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+      path: internal/fabric/fixtures/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
 
   peer1.org1.example.com:
     # this URL is used to send endorsement and query requests
-    url: 192.168.44.128:8051
+    url: 192.168.44.129:8051
     # eventUrl is only needed when using eventhub (default is delivery fabservice)
-    eventUrl: 192.168.44.128:8053
+    eventUrl: 192.168.44.129:8053
 
     grpcOptions:
       ssl-target-name-override: peer1.org1.example.com
@@ -193,13 +193,13 @@ peers:
 
     tlsCACerts:
       # Certificate location absolute path
-      path: ./fixtures/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+      path: internal/fabric/fixtures/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
 
   peer0.org2.example.com:
     # this URL is used to send endorsement and query requests
-    url: 192.168.44.128:9051
+    url: 192.168.44.129:9051
     # eventUrl is only needed when using eventhub (default is delivery fabservice)
-    eventUrl: 192.168.44.128:9053
+    eventUrl: 192.168.44.129:9053
 
     grpcOptions:
       ssl-target-name-override: peer1.org2.example.com
@@ -212,13 +212,13 @@ peers:
 
     tlsCACerts:
       # Certificate location absolute path
-      path: ./fixtures/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+      path: internal/fabric/fixtures/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
 
   peer1.org2.example.com:
     # this URL is used to send endorsement and query requests
-    url: 192.168.44.128:10051
+    url: 192.168.44.129:10051
     # eventUrl is only needed when using eventhub (default is delivery fabservice)
-    eventUrl: 192.168.44.128:10053
+    eventUrl: 192.168.44.129:10053
 
     grpcOptions:
       ssl-target-name-override: peer1.org2.example.com
@@ -231,15 +231,15 @@ peers:
 
     tlsCACerts:
       # Certificate location absolute path
-      path: ./fixtures/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+      path: internal/fabric/fixtures/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
 
 
 certificateAuthorities:
   ca.org1.example.com:
-    url: http://192.168.44.128:7054
+    url: http://192.168.44.129:7054
     tlsCACerts:
       # Certificate location absolute path
-      path: ./fixtures/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
+      path: internal/fabric/fixtures/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
 
     # Fabric-CA supports dynamic user enrollment via REST APIs. A "root" user, a.k.a registrar, is
     # needed to enroll and invoke new users.
@@ -252,35 +252,35 @@ certificateAuthorities:
 entityMatchers:
   peer:
     - pattern: (\w*)peer0.org1.example.com(\w*)
-      urlSubstitutionExp: 192.168.44.128:7051
-      eventUrlSubstitutionExp: 192.168.44.128:7053
+      urlSubstitutionExp: 192.168.44.129:7051
+      eventUrlSubstitutionExp: 192.168.44.129:7053
       sslTargetOverrideUrlSubstitutionExp: peer0.org1.example.com
       mappedHost: peer0.org1.example.com
 
     - pattern: (\w*)peer1.org1.example.com(\w*)
-      urlSubstitutionExp: 192.168.44.128:8051
-      eventUrlSubstitutionExp: 192.168.44.128:8053
+      urlSubstitutionExp: 192.168.44.129:8051
+      eventUrlSubstitutionExp: 192.168.44.129:8053
       sslTargetOverrideUrlSubstitutionExp: peer1.org1.example.com
       mappedHost: peer1.org1.example.com
 
     - pattern: (\w*)peer0.org2.example.com(\w*)
-      urlSubstitutionExp: 192.168.44.128:9051
-      eventUrlSubstitutionExp: 192.168.44.128:9053
+      urlSubstitutionExp: 192.168.44.129:9051
+      eventUrlSubstitutionExp: 192.168.44.129:9053
       sslTargetOverrideUrlSubstitutionExp: peer0.org2.example.com
       mappedHost: peer0.org2.example.com
 
     - pattern: (\w*)peer1.org2.example.com(\w*)
-      urlSubstitutionExp: 192.168.44.128:10051
-      eventUrlSubstitutionExp: 192.168.44.128:10053
+      urlSubstitutionExp: 192.168.44.129:10051
+      eventUrlSubstitutionExp: 192.168.44.129:10053
       sslTargetOverrideUrlSubstitutionExp: peer1.org2.example.com
       mappedHost: peer1.org2.example.com
   orderer:
     - pattern: (\w*)orderer.example.com(\w*)
-      urlSubstitutionExp: 192.168.44.128:7050
+      urlSubstitutionExp: 192.168.44.129:7050
       sslTargetOverrideUrlSubstitutionExp: orderer.example.com
       mappedHost: orderer.example.com
 
   certificateAuthorities:
     - pattern: (\w*)ca.org1.example.com(\w*)
-      urlSubstitutionExp: http://192.168.44.128:7054
+      urlSubstitutionExp: http://192.168.44.129:7054
       mappedHost: ca.org1.example.com
