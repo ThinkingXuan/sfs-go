@@ -7,14 +7,18 @@ import (
 	"log"
 	"os"
 	"path"
+	"sfs-go/internal/encrypt"
+	ecc2 "sfs-go/internal/encrypt/ecc"
 	"sfs-go/internal/fabric/fabservice"
 	"sfs-go/internal/fabric/sdkInit"
 	"sfs-go/internal/file"
+	"sfs-go/internal/tools"
 	"time"
 )
 
 var (
-	filePath string
+	filePath  string
+	startTime = time.Now()
 )
 
 // uploadCmd represents the upload command
@@ -33,12 +37,28 @@ and usage of using your command.`,
 			log.Println("file no exist")
 			return
 		}
+		// read file byte
+		log.Println("start file read!")
+		fileBytes, err := file.ReadFileBytes(filePath)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		fmt.Println("读文件：", time.Since(startTime))
+		// file mixed encryption
+		fileCipherText, eccCipherText, err := filehHybridEncryption(fileBytes)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 
-		// upload file to ipfs
-		hash, err := file.UploadFileToIPFS(filePath)
+		// upload file to ipfs, get file hash
+		hash, err := file.UploadFileToIPFS(fileCipherText)
 		if err != nil {
 			log.Printf("file[%s] upload failure", filePath)
+			return
 		}
+		fmt.Println("上传IPFS：", time.Since(startTime))
 
 		// upload file to fabric
 		fileID, _ := uuid.GenerateUUID()
@@ -50,7 +70,18 @@ and usage of using your command.`,
 			FileDate: time.Now().Format("2006-01-02 15:04:05"),
 			FileHash: hash,
 		}
-		insertFileToFabric(fileCC)
+
+		// ecc cipher text bytes to string
+		fileEncryptCipher := tools.ByteToString(eccCipherText)
+
+		// insert fabric
+		err = insertFileToFabric(fileCC, fileEncryptCipher)
+		if err != nil {
+			log.Println("insert fabric failure,", err)
+			return
+		}
+
+		fmt.Println("上传Fabric：", time.Since(startTime))
 
 		log.Println("file upload success!!!!")
 
@@ -63,12 +94,59 @@ func init() {
 	_ = uploadCmd.MarkFlagRequired("path")
 }
 
-func insertFileToFabric(fileCC fabservice.File) {
+func insertFileToFabric(fileCC fabservice.File, fileEncryptCipher string) error {
 	service := sdkInit.GetInstance().InitFabric()
 	_, err := service.InsertFile(fileCC)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 	address := file.ReadWithFile("config/my.address")
-	_, err = service.InsertAddressFile(address, fileCC.FileID)
+	_, err = service.InsertAddressFile(address, fileCC.FileID, fileEncryptCipher)
 	if err != nil {
 		log.Println("failure")
+		return err
 	}
+
+	return nil
+
+	//newFIleBytes, _ := service.QueryFile(fileCC.FileID)
+	//fmt.Println(newFIleBytes)
+	//var newFile fabservice.File
+	//_ = json.Unmarshal(newFIleBytes, &newFile)
+	//fmt.Println(newFile.FileEncryptCipher)
+	//
+	//fmt.Println("is", newFile.FileEncryptCipher == fileCC.FileEncryptCipher)
+}
+
+// filehHybridEncryption
+func filehHybridEncryption(srcFileBytes []byte) ([]byte, []byte, error) {
+	// generate Aes encryption key
+	fileID, _ := uuid.GenerateUUID()
+	aesEncryptKeyBytes := generateEncryptKey(fileID)
+	//create a new AES struct
+	aes := encrypt.NewAes()
+	//aes := encrypt.NewAesCipher128(aesEncryptKeyBytes[:16], aesEncryptKeyBytes[:16])
+	// Aes encrypt
+	fileCipherText, err := aes.AESEncrypt(srcFileBytes, aesEncryptKeyBytes)
+	if err != nil {
+		log.Println("aes encrypt err:", err)
+		return nil, nil, err
+	}
+
+	fmt.Println("AES加密：", time.Since(startTime))
+
+	// create a new ecc struct
+	ecc := ecc2.NewECC("config/")
+	eccCipherText, err := ecc.EccEncrypt(aesEncryptKeyBytes)
+	if err != nil {
+		log.Println(err)
+		return nil, nil, err
+	}
+	fmt.Println("ECC加密：", time.Since(startTime))
+	return fileCipherText, eccCipherText, nil
+}
+
+func generateEncryptKey(fileID string) []byte {
+	return []byte(fileID)[:32]
 }

@@ -28,25 +28,16 @@ func DownFile(fileHash string) ([]byte, error) {
 }
 
 // UploadFileToIPFS 上传文件到IPFS
-func UploadFileToIPFS(filename string) (string, error) {
+func UploadFileToIPFS(fileBytes []byte) (string, error) {
 	iPAddr := viper.GetString("ipfs_ip")
 	sh := shell.NewShell(iPAddr + ":5001")
 
-	log.Println("start file read!")
-	file, err := ioutil.ReadFile(filename)
-	log.Println("file read finish, start upload!")
-
-	if err != nil {
-		fmt.Println(err)
-		return "", err
-	}
-
-	var limit = int64(len(file))
+	var limit = int64(len(fileBytes))
 	// start new bar
 	bar := progressbar.NewProcessBarReader(limit)
 
 	// create proxy reader
-	barReader := bar.NewProxyReader(bytes.NewBuffer(file))
+	barReader := bar.NewProxyReader(bytes.NewBuffer(fileBytes))
 
 	//上传文件生成hash
 	hash, err := sh.Add(barReader)
@@ -73,4 +64,13 @@ func ReadWithFile(filename string) string {
 		return result
 	}
 	return ""
+}
+
+// ReadFileBytes read file from filepath ,return file bytes and error
+func ReadFileBytes(filePath string) ([]byte, error) {
+	fileBytes, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return []byte{}, err
+	}
+	return fileBytes, nil
 }

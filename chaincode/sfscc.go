@@ -1,10 +1,13 @@
 package main
 
 import (
+	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
+	"math/big"
+	"recrypt"
 )
 
 /**
@@ -18,8 +21,16 @@ type PublicKey struct {
 
 // AddressFile address receive files
 type AddressFile struct {
-	FileID []string `json:"file_id,omitempty"`
-	Files  []File   `json:"files,omitempty"`
+	FileEncrypt []EncryptEntity `json:"file_encrypt,omitempty"`
+	Files       []File          `json:"files,omitempty"`
+}
+
+type EncryptEntity struct {
+	FileID            string `json:"file_id"`
+	FileEncryptCipher string `json:"file_encrypt_cipher"`
+
+	FileRekey  string `json:"file_rekey"`
+	NewCapsule string `json:"new_capsule"`
 }
 
 // File file info
@@ -27,8 +38,15 @@ type File struct {
 	FileName string `json:"file_name"`
 	FileType string `json:"file_type"`
 	FileSize string `json:"file_size"`
-	FileData string `json:"file_data"`
+	FileDate string `json:"file_date"`
 	FileHash string `json:"file_hash"`
+}
+
+type ReKey struct {
+	Fdenc   []byte          `json:"fdenc"`
+	Rk      big.Int         `json:"rk"`
+	XA      ecdsa.PublicKey `json:"xa"`
+	Capsule recrypt.Capsule `json:"capsule"`
 }
 
 type SfsCC struct {
@@ -64,6 +82,8 @@ func (t *SfsCC) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 		return queryFile(stub, args)
 	} else if fun == "insert_addr_file" {
 		return insertAddressFile(stub, args)
+	} else if fun == "insert_share_address_file" {
+		return insertShareAddressFile(stub, args)
 	} else if fun == "query_addr_file" {
 		return queryAddressFile(stub, args)
 	} else {
@@ -105,16 +125,22 @@ func queryPkAndAddress(stub shim.ChaincodeStubInterface, args []string) peer.Res
 // k:v  key = fileID, value = File's json
 func insertFile(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	if len(args) != 6 {
-		return shim.Error("Incorrect number of arguments. Expecting 5")
+		return shim.Error("Incorrect number of arguments. Expecting 6")
 	}
 
 	var file = File{args[1], args[2], args[3], args[4], args[5]}
 
-	fileBytes, _ := json.Marshal(file)
-	err := stub.PutState(args[0], fileBytes)
+	// save file info
+	fileBytes, err := json.Marshal(file)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	err = stub.PutState(args[0], fileBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	// save file encrypt entity
 
 	return shim.Success(nil)
 }
@@ -130,10 +156,10 @@ func queryFile(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 }
 
 // insertAddressFile insert file to address's received file
-// k:v  key = address2, value = fileID
+// k:v  key = address2, value = addressFile's json
 func insertAddressFile(stub shim.ChaincodeStubInterface, args []string) peer.Response {
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
 
 	addrFileBytes, _ := stub.GetState(args[0])
@@ -147,7 +173,43 @@ func insertAddressFile(stub shim.ChaincodeStubInterface, args []string) peer.Res
 		}
 	}
 
-	addrFile.FileID = append(addrFile.FileID, args[1])
+	encryptEntity := EncryptEntity{FileID: args[1], FileEncryptCipher: args[2]}
+	addrFile.FileEncrypt = append(addrFile.FileEncrypt, encryptEntity)
+
+	newAddrFileBytes, _ := json.Marshal(addrFile)
+	// put state
+	err := stub.PutState(args[0], newAddrFileBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success(nil)
+}
+
+// insertShareAddressFile
+func insertShareAddressFile(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
+	}
+
+	addrFileBytes, _ := stub.GetState(args[0])
+
+	//// add file to address files
+	addrFile := AddressFile{}
+	if len(addrFileBytes) > 0 {
+		err := json.Unmarshal(addrFileBytes, &addrFile)
+		if err != nil {
+			return shim.Error("Unmarshal err")
+		}
+	}
+
+	// pre ReEncryption
+	var rekey *ReKey
+	_ = json.Unmarshal([]byte(args[2]), rekey)
+	newCapsule, err := recrypt.ReEncryption(&rekey.Rk, &rekey.Capsule)
+	newCapsuleString, _ := json.Marshal(newCapsule)
+	encryptEntity := EncryptEntity{FileID: args[1], FileRekey: args[2], NewCapsule: string(newCapsuleString)}
+	addrFile.FileEncrypt = append(addrFile.FileEncrypt, encryptEntity)
 
 	newAddrFileBytes, _ := json.Marshal(addrFile)
 	// put state
@@ -172,11 +234,11 @@ func queryAddressFile(stub shim.ChaincodeStubInterface, args []string) peer.Resp
 	if err != nil {
 		return shim.Error("Unmarshal err")
 	}
-	for i := 0; i < len(addrFile.FileID); i++ {
+	for i := 0; i < len(addrFile.FileEncrypt); i++ {
 
-		fileBytes,_ := stub.GetState(addrFile.FileID[i])
+		fileBytes, _ := stub.GetState(addrFile.FileEncrypt[i].FileID)
 		file := File{}
-		json.Unmarshal(fileBytes, &file)
+		_ = json.Unmarshal(fileBytes, &file)
 		addrFile.Files = append(addrFile.Files, file)
 	}
 

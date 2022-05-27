@@ -1,12 +1,26 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/spf13/cobra"
 	"log"
+	"math/big"
+	"sfs-go/internal/encrypt/pre/recrypt"
+	"sfs-go/internal/encrypt/util"
+	"sfs-go/internal/fabric/fabservice"
 	"sfs-go/internal/fabric/sdkInit"
 	"sfs-go/internal/file"
 )
+
+type ReKey struct {
+	Fdenc   []byte          `json:"fdenc"`
+	Rk      big.Int         `json:"rk"`
+	XA      ecdsa.PublicKey `json:"xa"`
+	Capsule recrypt.Capsule `json:"capsule"`
+}
 
 // shareCmd represents the share command
 var shareCmd = &cobra.Command{
@@ -65,6 +79,7 @@ func judgeAddress(address string) error {
 	if !addressExist(address) {
 		return errors.New("address not exist")
 	}
+
 	return nil
 }
 
@@ -110,11 +125,60 @@ func fileExist(fileID string) bool {
 
 func shareFile(address, fileID string) bool {
 	service := sdkInit.GetInstance().InitFabric()
-	_, err := service.InsertAddressFile(address, fileID)
+
+	//var fileHash string
+	var fileEncryptEntity fabservice.EncryptEntity
+
+	// get file info
+	if fileID != "" {
+		_, fileEncryptEntity = QueryFile(fileID)
+		//fileHash = fileCC.FileHash
+	} else {
+		log.Println("file id not is empty")
+		return false
+	}
+
+	// get Aes encrypt key
+	fd, err := GetAESKey(fileEncryptEntity.FileEncryptCipher)
+	if err != nil {
+		log.Println("get aes encrypt key failure,", err)
+		return false
+	}
+
+	// pre process
+
+	// alice
+	myPriKey, err := util.GetPriKey("config/")
+	myPubKey, err := util.GetPubKey("config/")
+
+	// bob
+	bobPubKeyByte, err := service.GetPublicKey(address)
+	bobPubKey := util.KeyFromByte(bobPubKeyByte)
+
+	// 本地加密后，上传密文和胶囊
+	fdenc, capsule, err := recrypt.Encrypt(string(fd), myPubKey)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// 本地分享时，先产生重加密密钥，上传到rk,Pubx
+	rk, pubX, err := recrypt.ReKeyGen(myPriKey, bobPubKey)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	rekey := ReKey{
+		Fdenc:   fdenc,
+		Rk:      *rk,
+		XA:      *pubX,
+		Capsule: *capsule,
+	}
+	rekeyByte, err := json.Marshal(rekey)
+
+	_, err = service.InsertShareAddressFile(address, fileID, rekeyByte)
 	if err != nil {
 		log.Println("insert err:", err)
 		return false
 	}
-
 	return true
 }

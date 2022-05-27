@@ -7,8 +7,16 @@ type PublicKey struct {
 
 // AddressFile address receive files
 type AddressFile struct {
-	FileID []string `json:"file_id,omitempty"`
-	Files  []File   `json:"files,omitempty"`
+	FileEncrypt []EncryptEntity `json:"file_encrypt,omitempty"`
+	Files       []File          `json:"files,omitempty"`
+}
+
+type EncryptEntity struct {
+	FileID            string `json:"file_id"`
+	FileEncryptCipher string `json:"file_encrypt_cipher"`
+
+	FileRekey  string `json:"file_rekey"`
+	NewCapsule string `json:"new_capsule"`
 }
 
 // File file info

@@ -25,8 +25,9 @@ var showCmd = &cobra.Command{
 		}
 
 		log.Println("-----------------id--------------", "----------name-------", "----------hash-------")
+
 		for i := 0; i < len(filesCC.Files); i++ {
-			log.Println(filesCC.FileID[i], filesCC.Files[i].FileName, filesCC.Files[i].FileHash)
+			log.Println(filesCC.FileEncrypt[i].FileID, filesCC.Files[i].FileName, filesCC.Files[i].FileHash)
 		}
 	},
 }

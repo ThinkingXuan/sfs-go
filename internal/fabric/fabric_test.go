@@ -63,7 +63,7 @@ func TestFabricQueryFile(t *testing.T) {
 func TestFabricInsertAddrFile(t *testing.T) {
 	service := sdkInit.GetInstance().InitFabric()
 
-	pkBytes, err := service.InsertAddressFile("1234567890", "file_id_2")
+	pkBytes, err := service.InsertAddressFile("1234567890", "file_id_2", "")
 	if err != nil {
 		t.Error(err)
 	}

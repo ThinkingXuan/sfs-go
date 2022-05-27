@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"log"
-	"sfs-go/internal/encrypt/esdsa"
+	"sfs-go/internal/encrypt/ecc"
 	"sfs-go/internal/fabric/sdkInit"
 	"sfs-go/internal/file"
+	"time"
 )
 
 // initCmd represents the init command
@@ -14,27 +16,44 @@ var initCmd = &cobra.Command{
 	Short: "sfs system init",
 	Long:  `Secure file sharing system based on blockchain init, At the same time generate the public and private keys of the elliptic curve algorithm`,
 	Run: func(cmd *cobra.Command, args []string) {
-		ecc := esdsa.NewECC()
-		// create a private key
-		priKey := ecc.GKey.GetPrivKey()
-		log.Println("my private key is:", esdsa.ByteToString(priKey))
-		// create a public key
-		pubKey := ecc.GKey.GetPubKey()
-		log.Println("my public key is:", esdsa.ByteToString(pubKey))
-		// crate a sfs address
-		address := ecc.GetAddress()
-		log.Println("my sfs address is:", address)
 
-		// upload address and public key to fabric
-		err := insertPk(address, esdsa.ByteToString(pubKey))
-		if err != nil {
-			log.Println(err)
-			log.Println("address and public key upload failure, please again init!!!!")
+		var allTime time.Duration
+		for i := 0; i < 10; i++ {
+
+			startTime := time.Now()
+
+			ecc := ecc.NewECC("config/")
+			// generate public key and private
+			err := ecc.GenerateECCKey(256)
+			if err != nil {
+				log.Println("generate key error,", err)
+				return
+			}
+
+			// crate a sfs address
+			address := ecc.GetAddress()
+			log.Println("my sfs address is:", address)
+
+			// upload address and public key to fabric
+			pubKey, err := ecc.GetECCPublicKey()
+			if err != nil {
+				log.Println("get public key failure:", err)
+				return
+			}
+			err = insertPk(address, string(pubKey))
+			if err != nil {
+				log.Println(err)
+				log.Println("address and public key upload failure, please again init!!!!")
+				return
+			}
+			// write address and private key to file
+			file.WriteWithFile("config/my.address", address)
+
+			elapsed := time.Since(startTime)
+			fmt.Println("初始化过程所花费的时间：", elapsed)
+			allTime += elapsed
 		}
-		// write address and private key to file
-		file.WriteWithFile("config/my.address", address)
-		file.WriteWithFile("config/my.privatekey", esdsa.ByteToString(priKey))
-
+		fmt.Println("总时间：", allTime)
 		log.Println("address and public key upload success!!!!")
 	},
 }

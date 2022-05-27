@@ -90,12 +90,23 @@ func (t *ServiceSetup) QueryFile(fileID string) ([]byte, error) {
 	return response.Payload, nil
 }
 
-//peer chaincode invoke -n mycc -c '{"Args":["insert_addr_file","12345678901","fileID1"]}' -C myc
+//peer chaincode invoke -n mycc -c '{"Args":["insert_addr_file","12345678901","fileID1","dsjfoijio"]}' -C myc
 
 // InsertAddressFile to address send file
-func (t *ServiceSetup) InsertAddressFile(address string, fileID string) ([]byte, error) {
+func (t *ServiceSetup) InsertAddressFile(address string, fileID string, fileEncryptCipher string) ([]byte, error) {
 	newAddress := address + "1"
-	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "insert_addr_file", Args: [][]byte{[]byte(newAddress), []byte(fileID)}}
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "insert_addr_file", Args: [][]byte{[]byte(newAddress), []byte(fileID), []byte(fileEncryptCipher)}}
+	response, err := t.Client.Execute(req)
+	if err != nil {
+		return []byte{}, err
+	}
+	return response.Payload, nil
+}
+
+// InsertShareAddressFile to address send file
+func (t *ServiceSetup) InsertShareAddressFile(address string, fileID string, reKey []byte) ([]byte, error) {
+	newAddress := address + "1"
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "insert_share_address_file", Args: [][]byte{[]byte(newAddress), []byte(fileID), reKey}}
 	response, err := t.Client.Execute(req)
 	if err != nil {
 		return []byte{}, err
