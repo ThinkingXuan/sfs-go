@@ -7,6 +7,7 @@ import (
 	"encoding/gob"
 	"encoding/hex"
 	"fmt"
+	"sfs-go/internal/encrypt"
 	"sfs-go/internal/encrypt/pre/curve"
 	"sfs-go/internal/encrypt/pre/math"
 	"sfs-go/internal/encrypt/pre/utils"
@@ -92,7 +93,13 @@ func Encrypt(message string, pubKey *ecdsa.PublicKey) (cipherText []byte, capsul
 	key := hex.EncodeToString(keyBytes)
 	// use aes gcm algorithm to encrypt
 	// mark keyBytes[:12] as nonce
-	cipherText, err = GCMEncrypt([]byte(message), key[:32], keyBytes[:12], nil)
+	//cipherText, err = GCMEncrypt([]byte(message), key[:32], keyBytes[:12], nil)
+	//if err != nil {
+	//	return nil, nil, err
+	//}
+	fmt.Println("Encryptkey: ", key)
+	aes := encrypt.NewAes()
+	cipherText, err = aes.AESEncrypt([]byte(message), []byte(key)[:32])
 	if err != nil {
 		return nil, nil, err
 	}
@@ -218,7 +225,13 @@ func Decrypt(bPriKey *ecdsa.PrivateKey, capsule *Capsule, pubX *ecdsa.PublicKey,
 	key := hex.EncodeToString(keyBytes)
 	// use aes gcm to decrypt
 	// mark keyBytes[:12] as nonce
-	plainText, err = GCMDecrypt(cipherText, key[:32], keyBytes[:12], nil)
+	//plainText, err = GCMDecrypt(cipherText, key[:32], keyBytes[:12], nil)
+	//if err != nil {
+	//	return nil, err
+	//}
+	fmt.Println("Decryptkey: ", key)
+	aes := encrypt.NewAes()
+	plainText, err = aes.AESDecrypt(cipherText, []byte(key)[:32])
 	if err != nil {
 		return nil, err
 	}

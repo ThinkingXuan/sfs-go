@@ -69,11 +69,11 @@ func GetKey(filePath string) (*pem.Block, error) {
 }
 
 func KeyFromByte(pub []byte) *ecdsa.PublicKey {
-
 	block, _ := pem.Decode(pub)
 	// X509
-	publicInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
+	publicInterface, err2 := x509.ParsePKIXPublicKey(block.Bytes)
+	if err2 != nil {
+		fmt.Println("parse err :", err2)
 		return nil
 	}
 	publicKey, flag := publicInterface.(*ecdsa.PublicKey)

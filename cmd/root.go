@@ -50,7 +50,7 @@ func init() {
 	//viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
 	//viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	//viper.SetDefault("license", "apache")
-	viper.SetDefault("ipfs_ip", "192.168.44.135")
+	viper.SetDefault("ipfs_ip", "192.168.202.130")
 }
 
 func initConfig() {

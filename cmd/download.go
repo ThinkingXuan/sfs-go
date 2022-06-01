@@ -1,11 +1,14 @@
 package cmd
 
 import (
+	"crypto/ecdsa"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
+	"math/big"
 	"path/filepath"
 	"sfs-go/internal/encrypt"
 	ecc2 "sfs-go/internal/encrypt/ecc"
@@ -47,36 +50,67 @@ var downloadCmd = &cobra.Command{
 			return
 		}
 
+		var fileAesKey []byte // file aes key
+
 		// is share's file
-		if fileEncryptEntity.NewCapsule != "" && len(fileEncryptEntity.NewCapsule) > 0 {
+		if len(fileEncryptEntity.CapsuleE) > 0 && len(fileEncryptEntity.CapsuleV) > 0 {
 			//ReCreateKey
 
 			// get myprikey
 			myPriKey, _ := util.GetPriKey("config/")
 			// get newCapule
 
-			var rekey *ReKey
-			var newCapsule *recrypt.Capsule
-			//reEncypte { newCapsule}
-			_ = json.Unmarshal([]byte(fileEncryptEntity.FileRekey), rekey)
-			_ = json.Unmarshal([]byte(fileEncryptEntity.NewCapsule), newCapsule)
-			fd, err := recrypt.Decrypt(myPriKey, newCapsule, &rekey.XA, rekey.Fdenc)
+			// key pair parse
+			xa, err1 := x509.ParsePKIXPublicKey(tools.StringToByte(fileEncryptEntity.XA))
+			if err1 != nil {
+				fmt.Println("ParsePKIXPublicKey1 err: " + err1.Error())
+			}
+
+			ce, err1 := x509.ParsePKIXPublicKey(tools.StringToByte(fileEncryptEntity.CapsuleE))
+			if err1 != nil {
+				fmt.Println("ParsePKIXPublicKey2 err: " + err1.Error())
+			}
+			cv, err1 := x509.ParsePKIXPublicKey(tools.StringToByte(fileEncryptEntity.CapsuleV))
+			if err1 != nil {
+				fmt.Println("ParsePKIXPublicKey2 err:" + err1.Error())
+			}
+
+			sInt := big.NewInt(1)
+			sIntSign := sInt.SetBytes(tools.StringToByte(fileEncryptEntity.CapsuleBint))
+			if fileEncryptEntity.CapsuleBintSign == "-1" {
+				sIntSign = sIntSign.Mul(sIntSign, big.NewInt(-1))
+			}
+			newCapsule := &recrypt.Capsule{
+				E: ce.(*ecdsa.PublicKey),
+				V: cv.(*ecdsa.PublicKey),
+				S: sIntSign,
+			}
+			//
+			//fmt.Println(myPriKey)
+			//fmt.Println(newCapsule)
+			fmt.Println(*xa.(*ecdsa.PublicKey))
+			fmt.Println("fenc: ", fileEncryptEntity.Fdenc)
+
+			fd, err := recrypt.Decrypt(myPriKey, newCapsule, xa.(*ecdsa.PublicKey), tools.StringToByte(fileEncryptEntity.Fdenc))
 			if err != nil {
-				log.Println("pre failure")
+				log.Println("pre failure: ", err)
 				return
 			}
+			fmt.Println("fd1: ", fileAesKey)
+
 			// replace
-			fileEncryptEntity.FileEncryptCipher = string(fd)
+			fileAesKey = fd
+		} else { // myself file
+			// get Aes encrypt key
+			fd, err := GetAESKey(fileEncryptEntity.FileEncryptCipher)
+			if err != nil {
+				log.Println("get aes encrypt key failure,", err)
+				return
+			}
+			fileAesKey = fd
 		}
 
-		// get Aes encrypt key
-		fileAesKey, err := GetAESKey(fileEncryptEntity.FileEncryptCipher)
-		if err != nil {
-			log.Println("get aes encrypt key failure,", err)
-			return
-		}
-
-		fmt.Println("ecc获取解密密钥：", time.Since(startTime2))
+		fmt.Println("fd2: ", string(fileAesKey))
 
 		// download file bytes from ipfs according file hash
 		fileEncryptBytes, err := file2.DownFile(fileCC.FileHash)

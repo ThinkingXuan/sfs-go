@@ -1,6 +1,6 @@
 module sfs-go
 
-go 1.14
+go 1.11
 
 require (
 	github.com/cheggaaa/pb/v3 v3.0.8
@@ -18,5 +18,6 @@ require (
 	github.com/spf13/viper v1.8.1
 	github.com/whyrusleeping/tar-utils v0.0.0-20201201191210-20a61371de5b // indirect
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
+	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 )

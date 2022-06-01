@@ -2,12 +2,14 @@ package main
 
 import (
 	"crypto/ecdsa"
+	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
+	"goRecrypt/recrypt"
 	"math/big"
-	"recrypt"
 )
 
 /**
@@ -29,8 +31,12 @@ type EncryptEntity struct {
 	FileID            string `json:"file_id"`
 	FileEncryptCipher string `json:"file_encrypt_cipher"`
 
-	FileRekey  string `json:"file_rekey"`
-	NewCapsule string `json:"new_capsule"`
+	XA              string `json:"xa"`
+	CapsuleE        string `json:"capsule_e"`
+	CapsuleV        string `json:"capsule_v"`
+	CapsuleBint     string `json:"capsule_bint"`
+	CapsuleBintSign string `json:"capsule_bint_sign"`
+	Fdenc           string `json:"fdenc"`
 }
 
 // File file info
@@ -43,10 +49,21 @@ type File struct {
 }
 
 type ReKey struct {
-	Fdenc   []byte          `json:"fdenc"`
-	Rk      big.Int         `json:"rk"`
-	XA      ecdsa.PublicKey `json:"xa"`
-	Capsule recrypt.Capsule `json:"capsule"`
+	Fdenc   []byte           `json:"fdenc"`
+	Rk      *big.Int         `json:"rk"`
+	XA      *ecdsa.PublicKey `json:"xa"`
+	Capsule *recrypt.Capsule `json:"capsule"`
+}
+
+type RekeySerialize struct {
+	Fdenc           string `json:"fdenc"`
+	Rk              string `json:"rk"`
+	RkSign          string `json:"rk_sign"`
+	XA              string `json:"xa"`
+	CapsuleE        string `json:"capsule_e"`
+	CapsuleV        string `json:"capsule_v"`
+	CapsuleBint     string `json:"capsule_bint"`
+	CapsuleBintSign string `json:"capsule_bint_sign"`
 }
 
 type SfsCC struct {
@@ -118,7 +135,13 @@ func queryPkAndAddress(stub shim.ChaincodeStubInterface, args []string) peer.Res
 	}
 
 	pkBytes, _ := stub.GetState(args[0])
-	return shim.Success(pkBytes)
+	var pk PublicKey
+	err := json.Unmarshal(pkBytes, &pk)
+	if err != nil {
+		return shim.Error("PublicKey Unmarshal err: " + err.Error())
+	}
+
+	return shim.Success([]byte(pk.PK))
 }
 
 // insertFile insert file
@@ -169,7 +192,7 @@ func insertAddressFile(stub shim.ChaincodeStubInterface, args []string) peer.Res
 	if len(addrFileBytes) > 0 {
 		err := json.Unmarshal(addrFileBytes, &addrFile)
 		if err != nil {
-			return shim.Error("Unmarshal err")
+			return shim.Error("Unmarshal err:" + err.Error())
 		}
 	}
 
@@ -199,21 +222,73 @@ func insertShareAddressFile(stub shim.ChaincodeStubInterface, args []string) pee
 	if len(addrFileBytes) > 0 {
 		err := json.Unmarshal(addrFileBytes, &addrFile)
 		if err != nil {
-			return shim.Error("Unmarshal err")
+			return shim.Error("AddressFile Unmarshal err")
 		}
 	}
 
 	// pre ReEncryption
-	var rekey *ReKey
-	_ = json.Unmarshal([]byte(args[2]), rekey)
-	newCapsule, err := recrypt.ReEncryption(&rekey.Rk, &rekey.Capsule)
-	newCapsuleString, _ := json.Marshal(newCapsule)
-	encryptEntity := EncryptEntity{FileID: args[1], FileRekey: args[2], NewCapsule: string(newCapsuleString)}
+	var rekeySerialize RekeySerialize
+	err := json.Unmarshal([]byte(args[2]), &rekeySerialize)
+	if err != nil {
+		return shim.Error("ReKey Unmarshal failure: " + err.Error())
+	}
+
+	// key pair parse
+	xa, err1 := x509.ParsePKIXPublicKey(StringToByte(rekeySerialize.XA))
+	if err1 != nil {
+		return shim.Error("ParsePKIXPublicKey1 err: " + err1.Error())
+	}
+
+	ce, err1 := x509.ParsePKIXPublicKey(StringToByte(rekeySerialize.CapsuleE))
+	if err1 != nil {
+		return shim.Error("ParsePKIXPublicKey2 err: " + err1.Error())
+	}
+
+	cv, err1 := x509.ParsePKIXPublicKey(StringToByte(rekeySerialize.CapsuleV))
+	if err1 != nil {
+		return shim.Error("ParsePKIXPublicKey2 err:" + err1.Error())
+	}
+
+	// deal rk sign
+	rkbig := big.NewInt(1)
+	rk := rkbig.SetBytes(StringToByte(rekeySerialize.Rk))
+	if rekeySerialize.RkSign == "-1" {
+		rk = rk.Mul(rk, big.NewInt(-1))
+	}
+
+	rekey := ReKey{
+		Fdenc: StringToByte(rekeySerialize.Fdenc),
+		Rk:    rk,
+		XA:    xa.(*ecdsa.PublicKey),
+		Capsule: &recrypt.Capsule{
+			E: ce.(*ecdsa.PublicKey),
+			V: cv.(*ecdsa.PublicKey),
+			S: rkbig.SetBytes(StringToByte(rekeySerialize.CapsuleBint)),
+		},
+	}
+
+	newCapsule, err := recrypt.ReEncryption(rekey.Rk, rekey.Capsule)
+	if err != nil {
+		return shim.Error("ReEncryption failure: " + err.Error())
+	}
+
+	newXa, err2 := x509.MarshalPKIXPublicKey(rekey.XA)
+	newCe, err3 := x509.MarshalPKIXPublicKey(newCapsule.E)
+	NewCv, err4 := x509.MarshalPKIXPublicKey(newCapsule.V)
+	if err2 != nil || err3 != nil || err4 != nil {
+		fmt.Println(err1, err2, err3)
+	}
+
+	encryptEntity := EncryptEntity{FileID: args[1], XA: ByteToString(newXa), CapsuleE: ByteToString(newCe), CapsuleV: ByteToString(NewCv), CapsuleBint: ByteToString(newCapsule.S.Bytes()), CapsuleBintSign: fmt.Sprintf("%d", newCapsule.S.Sign()), Fdenc: ByteToString(rekey.Fdenc)}
 	addrFile.FileEncrypt = append(addrFile.FileEncrypt, encryptEntity)
 
-	newAddrFileBytes, _ := json.Marshal(addrFile)
+	newAddrFileBytes, err := json.Marshal(addrFile)
+	if err != nil {
+		return shim.Error("newAddrFileBytes Marshal failure:" + err.Error())
+	}
+
 	// put state
-	err := stub.PutState(args[0], newAddrFileBytes)
+	err = stub.PutState(args[0], newAddrFileBytes)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -245,4 +320,15 @@ func queryAddressFile(stub shim.ChaincodeStubInterface, args []string) peer.Resp
 	newAddrFileBytes, _ := json.Marshal(addrFile)
 
 	return shim.Success(newAddrFileBytes)
+}
+
+// ByteToString 把字节数组转换为十六进制字符串
+func ByteToString(b []byte) (s string) {
+	return hex.EncodeToString(b)
+}
+
+// StringToByte 十六进制字符串转换为字节数组
+func StringToByte(s string) []byte {
+	b, _ := hex.DecodeString(s)
+	return b
 }

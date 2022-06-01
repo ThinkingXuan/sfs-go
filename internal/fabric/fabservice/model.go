@@ -15,8 +15,12 @@ type EncryptEntity struct {
 	FileID            string `json:"file_id"`
 	FileEncryptCipher string `json:"file_encrypt_cipher"`
 
-	FileRekey  string `json:"file_rekey"`
-	NewCapsule string `json:"new_capsule"`
+	XA              string `json:"xa"`
+	CapsuleE        string `json:"capsule_e"`
+	CapsuleV        string `json:"capsule_v"`
+	CapsuleBint     string `json:"capsule_bint"`
+	CapsuleBintSign string `json:"capsule_bint_sign"`
+	Fdenc           string `json:"fdenc"`
 }
 
 // File file info
