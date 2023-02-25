@@ -277,6 +277,7 @@ func insertShareAddressFile(stub shim.ChaincodeStubInterface, args []string) pee
 	NewCv, err4 := x509.MarshalPKIXPublicKey(newCapsule.V)
 	if err2 != nil || err3 != nil || err4 != nil {
 		fmt.Println(err1, err2, err3)
+		return shim.Error(err2.Error())
 	}
 
 	encryptEntity := EncryptEntity{FileID: args[1], XA: ByteToString(newXa), CapsuleE: ByteToString(newCe), CapsuleV: ByteToString(NewCv), CapsuleBint: ByteToString(newCapsule.S.Bytes()), CapsuleBintSign: fmt.Sprintf("%d", newCapsule.S.Sign()), Fdenc: ByteToString(rekey.Fdenc)}

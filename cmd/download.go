@@ -77,9 +77,7 @@ var downloadCmd = &cobra.Command{
 
 			sInt := big.NewInt(1)
 			sIntSign := sInt.SetBytes(tools.StringToByte(fileEncryptEntity.CapsuleBint))
-			if fileEncryptEntity.CapsuleBintSign == "-1" {
-				sIntSign = sIntSign.Mul(sIntSign, big.NewInt(-1))
-			}
+
 			newCapsule := &recrypt.Capsule{
 				E: ce.(*ecdsa.PublicKey),
 				V: cv.(*ecdsa.PublicKey),

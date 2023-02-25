@@ -158,16 +158,15 @@ func shareFile(address, fileID string) bool {
 		return false
 	}
 
-	fmt.Println("fd: ", fd)
 	fmt.Println("fd: ", string(fd))
 
 	// pre process
 
-	// alice
+	// alice (sender)
 	myPriKey, err := util.GetPriKey("config/")
 	myPubKey, err := util.GetPubKey("config/")
 
-	// bob
+	// bob （receiver）
 	bobPubKeyByte, err := service.GetPublicKey(address)
 	bobPubKey := util.KeyFromByte(bobPubKeyByte)
 	fmt.Println(bobPubKey)
@@ -184,8 +183,6 @@ func shareFile(address, fileID string) bool {
 		fmt.Println(err)
 	}
 
-	fmt.Println("XA", *pubX)
-
 	// 原始rekey
 	rekey := ReKey{
 		Fdenc:   fdenc,
@@ -197,11 +194,14 @@ func shareFile(address, fileID string) bool {
 	xa, err1 := x509.MarshalPKIXPublicKey(rekey.XA)
 	ce, err2 := x509.MarshalPKIXPublicKey(rekey.Capsule.E)
 	cv, err3 := x509.MarshalPKIXPublicKey(rekey.Capsule.V)
+
+	fmt.Println("xa", xa, " ", tools.ByteToString(xa))
+	fmt.Println("ce", ce, " ", tools.ByteToString(ce))
+	fmt.Println("cv", cv, " ", tools.ByteToString(cv))
+
 	if err1 != nil || err2 != nil || err3 != nil {
 		fmt.Println(err1, err2, err3)
 	}
-
-	fmt.Println("fdenc:", tools.ByteToString(rekey.Fdenc))
 
 	// 需要序列化传输的rekey
 	rekeySerialize := RekeySerialize{

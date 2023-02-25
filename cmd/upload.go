@@ -91,6 +91,7 @@ and usage of using your command.`,
 func init() {
 	rootCmd.AddCommand(uploadCmd)
 	uploadCmd.Flags().StringVarP(&filePath, "path", "p", "", "file upload path")
+	//uploadCmd.Flags().Bool("pri", false, "if set private, file no share")
 	_ = uploadCmd.MarkFlagRequired("path")
 }
 
