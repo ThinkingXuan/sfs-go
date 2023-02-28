@@ -252,9 +252,13 @@ func insertShareAddressFile(stub shim.ChaincodeStubInterface, args []string) pee
 	// deal rk sign
 	rkbig := big.NewInt(1)
 	rk := rkbig.SetBytes(StringToByte(rekeySerialize.Rk))
-	if rekeySerialize.RkSign == "-1" {
-		rk = rk.Mul(rk, big.NewInt(-1))
-	}
+
+	//capsule, err := recrypt.DecodeCapsule(tools.StringToByte(rekeySerialize.Capsule))
+	//if err != nil {
+	//	fmt.Println("DecodeCapsule err", err)
+	//	return
+	//}
+	capsuleBig := big.NewInt(1)
 
 	rekey := ReKey{
 		Fdenc: StringToByte(rekeySerialize.Fdenc),
@@ -263,7 +267,7 @@ func insertShareAddressFile(stub shim.ChaincodeStubInterface, args []string) pee
 		Capsule: &recrypt.Capsule{
 			E: ce.(*ecdsa.PublicKey),
 			V: cv.(*ecdsa.PublicKey),
-			S: rkbig.SetBytes(StringToByte(rekeySerialize.CapsuleBint)),
+			S: capsuleBig.SetBytes(StringToByte(rekeySerialize.CapsuleBint)),
 		},
 	}
 
