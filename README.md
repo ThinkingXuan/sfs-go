@@ -12,7 +12,7 @@ Secure file sharing system based on blockchain 基于区块链的安全文件共
     - 地址管理 ✔
     - 文件管理 ✔
     - 文件签名验证 
-    - 代理重加密 
+    - 代理重加密 ✔
 8. Fabric-SDK-Go集成
    - 正式Fabric环境的搭建 ✔
    - Fabric-SDK-Go集成 ✔
