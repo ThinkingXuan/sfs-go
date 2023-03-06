@@ -37,6 +37,7 @@ type EncryptEntity struct {
 	CapsuleBint     string `json:"capsule_bint"`
 	CapsuleBintSign string `json:"capsule_bint_sign"`
 	Fdenc           string `json:"fdenc"`
+	IsABEShare      string `json:"is_abe_share"`
 }
 
 // File file info
@@ -64,6 +65,13 @@ type RekeySerialize struct {
 	CapsuleV        string `json:"capsule_v"`
 	CapsuleBint     string `json:"capsule_bint"`
 	CapsuleBintSign string `json:"capsule_bint_sign"`
+}
+
+// abe
+
+// AttrsAndID address: Attrs and id
+type AttrsAndID struct {
+	AttrsId string `json:"attrs_id"`
 }
 
 type SfsCC struct {
@@ -103,11 +111,110 @@ func (t *SfsCC) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 		return insertShareAddressFile(stub, args)
 	} else if fun == "query_addr_file" {
 		return queryAddressFile(stub, args)
+	} else if fun == "insert_attrs_id" {
+		return insertAttrsAndID(stub, args)
+	} else if fun == "query_attrs_id" {
+		return queryAttrsAndID(stub, args)
+	} else if fun == "insert_abe_auth_pk" {
+		return insertAbeAuthPK(stub, args)
+	} else if fun == "query_abe_auth_pk" {
+		return queryAbeAuthPK(stub, args)
+	} else if fun == "insert_abe_share_address_file" {
+		return insertABEShareAddressFile(stub, args)
 	} else {
 		shim.Error("failure")
 	}
 
 	return shim.Error("failure")
+}
+
+// insertShareAddressFile
+func insertABEShareAddressFile(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
+	}
+
+	addrFileBytes, _ := stub.GetState(args[0])
+
+	//// add file to address files
+	addrFile := AddressFile{}
+	if len(addrFileBytes) > 0 {
+		err := json.Unmarshal(addrFileBytes, &addrFile)
+		if err != nil {
+			return shim.Error("AddressFile Unmarshal err")
+		}
+	}
+
+	encryptEntity := EncryptEntity{FileID: args[1], Fdenc: args[2], IsABEShare: "true"}
+	addrFile.FileEncrypt = append(addrFile.FileEncrypt, encryptEntity)
+
+	newAddrFileBytes, err := json.Marshal(addrFile)
+	if err != nil {
+		return shim.Error("newAddrFileBytes Marshal failure:" + err.Error())
+	}
+	// put state
+	err = stub.PutState(args[0], newAddrFileBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success(nil)
+}
+
+func insertAbeAuthPK(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
+	}
+	address := args[0]
+	abeAuthPk := args[1]
+
+	err := stub.PutState(address, []byte(abeAuthPk))
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil)
+}
+
+func queryAbeAuthPK(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	abeAuthPkBytes, _ := stub.GetState(args[0])
+	return shim.Success(abeAuthPkBytes)
+}
+
+func insertAttrsAndID(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
+	}
+	var attrs = AttrsAndID{args[1]}
+
+	attrsBytes, err := json.Marshal(attrs)
+	if err != nil {
+		return shim.Error("attrsBytes Marshal err: " + err.Error())
+	}
+	err = stub.PutState(args[0], attrsBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil)
+}
+
+// queryAttrsAndID according user's address1 to query attrs and id
+func queryAttrsAndID(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	attrsAndIdBytes, _ := stub.GetState(args[0])
+	var pk AttrsAndID
+	err := json.Unmarshal(attrsAndIdBytes, &pk)
+	if err != nil {
+		return shim.Error("AttrsAndID query Unmarshal err: " + err.Error())
+	}
+
+	return shim.Success([]byte(pk.AttrsId))
 }
 
 // insertPkAndAddress insert user's public key and address to fabric

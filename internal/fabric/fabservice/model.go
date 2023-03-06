@@ -21,6 +21,7 @@ type EncryptEntity struct {
 	CapsuleBint     string `json:"capsule_bint"`
 	CapsuleBintSign string `json:"capsule_bint_sign"`
 	Fdenc           string `json:"fdenc"`
+	IsABEShare      string `json:"is_abe_share"`
 }
 
 // File file info

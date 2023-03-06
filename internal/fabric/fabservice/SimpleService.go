@@ -126,3 +126,56 @@ func (t *ServiceSetup) QueryAddressFile(address string) ([]byte, error) {
 	}
 	return response.Payload, nil
 }
+
+// InsertAbeAttrsAndId cp-abe insert attr and id
+func (t *ServiceSetup) InsertAbeAttrsAndId(address string, attrsAndID string) ([]byte, error) {
+	newAddress := address + "2"
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "insert_attrs_id", Args: [][]byte{[]byte(newAddress), []byte(attrsAndID)}}
+	response, err := t.Client.Execute(req)
+	if err != nil {
+		return []byte{0x00}, err
+	}
+	return response.Payload, nil
+}
+
+// QueryAbeAttrsAndId
+func (t *ServiceSetup) QueryAbeAttrsAndId(address string) ([]byte, error) {
+	newAddress := address + "2"
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "query_attrs_id", Args: [][]byte{[]byte(newAddress)}}
+	response, err := t.Client.Query(req)
+	if err != nil {
+		return []byte{0x00}, err
+	}
+	return response.Payload, nil
+}
+
+// InsertAbeAuthPK cp-abe insert auth pk
+func (t *ServiceSetup) InsertAbeAuthPK(address string, authPK []byte) ([]byte, error) {
+	newAddress := address + "3"
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "insert_abe_auth_pk", Args: [][]byte{[]byte(newAddress), []byte(authPK)}}
+	response, err := t.Client.Execute(req)
+	if err != nil {
+		return []byte{0x00}, err
+	}
+	return response.Payload, nil
+}
+
+func (t *ServiceSetup) QueryAbeAuthPK(address string) ([]byte, error) {
+	newAddress := address + "3"
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "query_abe_auth_pk", Args: [][]byte{[]byte(newAddress)}}
+	response, err := t.Client.Query(req)
+	if err != nil {
+		return []byte{0x00}, err
+	}
+	return response.Payload, nil
+}
+
+func (t *ServiceSetup) InsertAbeShareAddressFile(address string, fileID string, fdenc string) ([]byte, error) {
+	newAddress := address + "1"
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "insert_abe_share_address_file", Args: [][]byte{[]byte(newAddress), []byte(fileID), []byte(fdenc)}}
+	response, err := t.Client.Execute(req)
+	if err != nil {
+		return []byte{}, err
+	}
+	return response.Payload, nil
+}

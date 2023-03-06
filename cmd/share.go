@@ -158,8 +158,6 @@ func shareFile(address, fileID string) bool {
 		return false
 	}
 
-	fmt.Println("fd: ", string(fd))
-
 	// pre process
 
 	// alice (sender)

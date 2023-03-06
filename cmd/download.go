@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"github.com/fentec-project/gofe/abe"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"sfs-go/internal/encrypt"
 	ecc2 "sfs-go/internal/encrypt/ecc"
+	"sfs-go/internal/encrypt/pre/file"
 	"sfs-go/internal/encrypt/pre/recrypt"
 	"sfs-go/internal/encrypt/util"
 	"sfs-go/internal/fabric/fabservice"
@@ -52,7 +54,7 @@ var downloadCmd = &cobra.Command{
 
 		var fileAesKey []byte // file aes key
 
-		// is share's file
+		// is pre share's file
 		if len(fileEncryptEntity.CapsuleE) > 0 && len(fileEncryptEntity.CapsuleV) > 0 {
 			//ReCreateKey
 
@@ -98,7 +100,36 @@ var downloadCmd = &cobra.Command{
 
 			// replace
 			fileAesKey = fd
-		} else { // myself file
+		} else if fileEncryptEntity.IsABEShare == "true" { // myself file
+
+			maabe := abe.NewMAABE()
+			gid := "gid"
+			myAddress := tools.GetMyAddress()
+			attrs := queryIDAndAttrs(myAddress)
+
+			authTemp, err := maabe.NewMAABEAuth(attrs.Id, attrs.Attrs)
+			if err != nil {
+				fmt.Printf("Failed generation authority %s: %v\n", attrs.Id, err)
+			}
+			authBytes := file.ReadWithFile("config/" + attrs.Id)
+			auth, err := authTemp.DecodeAuth(tools.StringToByte(authBytes))
+			keys1, err := auth.GenerateAttribKeys(gid, attrs.Attrs)
+			ks1 := []*abe.MAABEKey{keys1[0], keys1[1]}
+
+			fdctBytes := tools.StringToByte(fileEncryptEntity.Fdenc)
+			abeCipter, err := maabe.DecodeABECipher(fdctBytes)
+			if err != nil {
+				fmt.Println("maabe.DecodeABECipher err ", err)
+				return
+			}
+			msg1, err := maabe.Decrypt(&abeCipter, ks1)
+
+			if err != nil {
+				fmt.Printf("Error decrypting with keyset 1: %v\n", err)
+				return
+			}
+			fileAesKey = []byte(msg1)
+		} else {
 			// get Aes encrypt key
 			fd, err := GetAESKey(fileEncryptEntity.FileEncryptCipher)
 			if err != nil {
@@ -107,8 +138,6 @@ var downloadCmd = &cobra.Command{
 			}
 			fileAesKey = fd
 		}
-
-		fmt.Println("fd2: ", string(fileAesKey))
 
 		// download file bytes from ipfs according file hash
 		fileEncryptBytes, err := file2.DownFile(fileCC.FileHash)

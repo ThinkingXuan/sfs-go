@@ -1,6 +1,9 @@
 package tools
 
-import "encoding/hex"
+import (
+	"encoding/hex"
+	"sfs-go/internal/file"
+)
 
 // ByteToString 把字节数组转换为十六进制字符串
 func ByteToString(b []byte) (s string) {
@@ -11,4 +14,8 @@ func ByteToString(b []byte) (s string) {
 func StringToByte(s string) []byte {
 	b, _ := hex.DecodeString(s)
 	return b
+}
+
+func GetMyAddress() string {
+	return file.ReadWithFile("config/my.address")
 }

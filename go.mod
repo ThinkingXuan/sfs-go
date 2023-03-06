@@ -2,6 +2,7 @@ module sfs-go
 
 go 1.11
 
+
 require (
 	github.com/bytedance/sonic v1.8.2 // indirect
 	github.com/cheggaaa/pb/v3 v3.0.8
@@ -25,3 +26,7 @@ require (
 	golang.org/x/crypto v0.6.0
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6 // indirect
 )
+// 引入本地包
+require github.com/fentec-project/gofe v0.0.0
+replace github.com/fentec-project/gofe => ../gofe-master
+

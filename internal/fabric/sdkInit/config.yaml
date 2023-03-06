@@ -138,7 +138,7 @@ organizations:
       - ca.org2.example.com
 orderers:
   orderer.example.com:
-    url: 192.168.202.130:7050
+    url: 192.168.217.134:7050
 
     # these are standard properties defined by the gRPC library
     # they will be passed in as-is to gRPC client constructor
@@ -159,9 +159,9 @@ orderers:
 peers:
   peer0.org1.example.com:
     # this URL is used to send endorsement and query requests
-    url: 192.168.202.130:7051
+    url: 192.168.217.134:7051
     # eventUrl is only needed when using eventhub (default is delivery fabservice)
-    eventUrl: 192.168.202.130:7053
+    eventUrl: 192.168.217.134:7053
 
     grpcOptions:
       ssl-target-name-override: peer0.org1.example.com
@@ -178,9 +178,9 @@ peers:
 
   peer1.org1.example.com:
     # this URL is used to send endorsement and query requests
-    url: 192.168.202.130:8051
+    url: 192.168.217.134:8051
     # eventUrl is only needed when using eventhub (default is delivery fabservice)
-    eventUrl: 192.168.202.130:8053
+    eventUrl: 192.168.217.134:8053
 
     grpcOptions:
       ssl-target-name-override: peer1.org1.example.com
@@ -197,9 +197,9 @@ peers:
 
   peer0.org2.example.com:
     # this URL is used to send endorsement and query requests
-    url: 192.168.202.130:9051
+    url: 192.168.217.134:9051
     # eventUrl is only needed when using eventhub (default is delivery fabservice)
-    eventUrl: 192.168.202.130:9053
+    eventUrl: 192.168.217.134:9053
 
     grpcOptions:
       ssl-target-name-override: peer1.org2.example.com
@@ -216,9 +216,9 @@ peers:
 
   peer1.org2.example.com:
     # this URL is used to send endorsement and query requests
-    url: 192.168.202.130:10051
+    url: 192.168.217.134:10051
     # eventUrl is only needed when using eventhub (default is delivery fabservice)
-    eventUrl: 192.168.202.130:10053
+    eventUrl: 192.168.217.134:10053
 
     grpcOptions:
       ssl-target-name-override: peer1.org2.example.com
@@ -236,7 +236,7 @@ peers:
 
 certificateAuthorities:
   ca.org1.example.com:
-    url: http://192.168.202.130:7054
+    url: http://192.168.217.134:7054
     tlsCACerts:
       # Certificate location absolute path
       path: internal/fabric/fixtures/crypto-config/peerOrganizations/org1.example.com/ca/ca.org1.example.com-cert.pem
@@ -252,35 +252,35 @@ certificateAuthorities:
 entityMatchers:
   peer:
     - pattern: (\w*)peer0.org1.example.com(\w*)
-      urlSubstitutionExp: 192.168.202.130:7051
-      eventUrlSubstitutionExp: 192.168.202.130:7053
+      urlSubstitutionExp: 192.168.217.134:7051
+      eventUrlSubstitutionExp: 192.168.217.134:7053
       sslTargetOverrideUrlSubstitutionExp: peer0.org1.example.com
       mappedHost: peer0.org1.example.com
 
     - pattern: (\w*)peer1.org1.example.com(\w*)
-      urlSubstitutionExp: 192.168.202.130:8051
-      eventUrlSubstitutionExp: 192.168.202.130:8053
+      urlSubstitutionExp: 192.168.217.134:8051
+      eventUrlSubstitutionExp: 192.168.217.134:8053
       sslTargetOverrideUrlSubstitutionExp: peer1.org1.example.com
       mappedHost: peer1.org1.example.com
 
     - pattern: (\w*)peer0.org2.example.com(\w*)
-      urlSubstitutionExp: 192.168.202.130:9051
-      eventUrlSubstitutionExp: 192.168.202.130:9053
+      urlSubstitutionExp: 192.168.217.134:9051
+      eventUrlSubstitutionExp: 192.168.217.134:9053
       sslTargetOverrideUrlSubstitutionExp: peer0.org2.example.com
       mappedHost: peer0.org2.example.com
 
     - pattern: (\w*)peer1.org2.example.com(\w*)
-      urlSubstitutionExp: 192.168.202.130:10051
-      eventUrlSubstitutionExp: 192.168.202.130:10053
+      urlSubstitutionExp: 192.168.217.134:10051
+      eventUrlSubstitutionExp: 192.168.217.134:10053
       sslTargetOverrideUrlSubstitutionExp: peer1.org2.example.com
       mappedHost: peer1.org2.example.com
   orderer:
     - pattern: (\w*)orderer.example.com(\w*)
-      urlSubstitutionExp: 192.168.202.130:7050
+      urlSubstitutionExp: 192.168.217.134:7050
       sslTargetOverrideUrlSubstitutionExp: orderer.example.com
       mappedHost: orderer.example.com
 
   certificateAuthorities:
     - pattern: (\w*)ca.org1.example.com(\w*)
-      urlSubstitutionExp: http://192.168.202.130:7054
+      urlSubstitutionExp: http://192.168.217.134:7054
       mappedHost: ca.org1.example.com
