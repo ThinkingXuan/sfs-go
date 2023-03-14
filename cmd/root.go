@@ -10,11 +10,11 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "sfs",
-	Short: "sfs is a distributed version control system.",
-	Long: `sfs is a free and open source distributed version control system
-designed to handle everything from small to very large projects 
-with speed and efficiency.`,
+	Use:   "bf",
+	Short: "bfshell is a multi-dimensional security tool for file sharing.",
+	Long: `bfshell is a multi-dimensional security tool for file sharing based on blockchain and IPFS. 
+It has file sharing and fine-grained permission control and other functions to ensure 
+the maximum security of the file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		Error(cmd, args, errors.New("unrecognized command"))
 	},
@@ -50,7 +50,8 @@ func init() {
 	//viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
 	//viper.SetDefault("author", "NAME HERE <EMAIL ADDRESS>")
 	//viper.SetDefault("license", "apache")
-	viper.SetDefault("ipfs_ip", "192.168.217.134")
+	viper.SetDefault("ipfs_ip", "192.168.59.128")
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }
 
 func initConfig() {

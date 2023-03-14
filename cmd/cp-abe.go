@@ -43,6 +43,8 @@ var add = &cobra.Command{
 			file.WriteWithFile("config/msp", mspBoolean)
 		}
 
+		fmt.Println("访问结构：", mspBoolean)
+
 		// id和属性集
 		var idAttrs []IdAndAttr
 
@@ -60,6 +62,10 @@ var add = &cobra.Command{
 			Attrs: attr3,
 		}
 
+		fmt.Println("权威机构:", idAttr1.Id, "属性集:", idAttr1.Attrs, "地址:", authAddr1)
+		fmt.Println("权威机构:", idAttr2.Id, "属性集:", idAttr2.Attrs, "地址:", authAddr2)
+		fmt.Println("权威机构:", idAttr3.Id, "属性集:", idAttr3.Attrs, "地址:", authAddr3)
+
 		idAttrs = append(idAttrs, []IdAndAttr{idAttr1, idAttr2, idAttr3}...)
 		address := []string{authAddr1, authAddr2, authAddr3}
 
@@ -69,6 +75,7 @@ var add = &cobra.Command{
 
 		// auth的地址存储本地
 		file.WriteWithFile("config/auth.Address", strings.Join(address, ","))
+		fmt.Println("cp-abe init success!")
 	},
 }
 
@@ -111,6 +118,8 @@ var generateAuth = &cobra.Command{
 		if err != nil {
 			fmt.Println("upload pubkey error ", err)
 		}
+
+		fmt.Println(attrs.Id, " generate pubkey success!")
 	},
 }
 
@@ -186,7 +195,6 @@ var abeShare = &cobra.Command{
 
 		// 3. 获取加密fd
 		fd := getFilefd(shareABEFileID)
-		fmt.Println("fd", fd)
 		// 3. 执行加密操作
 		ct, err := maabe.Encrypt(string(fd), msp, pks)
 		if err != nil {
@@ -200,6 +208,8 @@ var abeShare = &cobra.Command{
 			return
 		}
 		uploadABECt(strings.Split(addres, ","), shareABEFileID, tools.ByteToString(abeCipherBytes))
+
+		fmt.Println("bf abe share file success!")
 	},
 }
 

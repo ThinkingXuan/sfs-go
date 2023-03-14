@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/spf13/cobra"
 	"log"
 	"sfs-go/internal/fabric/fabservice"
@@ -16,8 +15,6 @@ var showCmd = &cobra.Command{
 	Short: "show all files at this address.",
 	Long:  `show all files at this address.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(attrsss)
-		fmt.Println(len(attrsss))
 		log.Println("The files at this address are as follows!!!")
 		address := file.ReadWithFile("config/my.address")
 		fileBytes := queryAddressFile(address)
@@ -40,7 +37,6 @@ var attrsss []string
 func init() {
 	rootCmd.AddCommand(showCmd)
 	showCmd.Flags().BoolP("list", "l", false, "list file")
-	showCmd.Flags().StringSliceVarP(&attrsss, "attr1", "", []string{}, "attribute set")
 }
 
 func queryAddressFile(address string) []byte {

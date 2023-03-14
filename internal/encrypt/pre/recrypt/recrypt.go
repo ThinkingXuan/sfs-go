@@ -48,7 +48,6 @@ func encryptKeyGen(pubKey *ecdsa.PublicKey) (capsule *Capsule, keyBytes []byte, 
 		V: pubV,
 		S: s,
 	}
-	fmt.Println("old key:", hex.EncodeToString(keyBytes))
 	return capsule, keyBytes, nil
 }
 
@@ -97,7 +96,6 @@ func Encrypt(message string, pubKey *ecdsa.PublicKey) (cipherText []byte, capsul
 	//if err != nil {
 	//	return nil, nil, err
 	//}
-	fmt.Println("Encryptkey: ", key)
 	aes := encrypt.NewAes()
 	cipherText, err = aes.AESEncrypt([]byte(message), []byte(key)[:32])
 	if err != nil {

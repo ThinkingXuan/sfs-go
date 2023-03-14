@@ -167,7 +167,6 @@ func shareFile(address, fileID string) bool {
 	// bob （receiver）
 	bobPubKeyByte, err := service.GetPublicKey(address)
 	bobPubKey := util.KeyFromByte(bobPubKeyByte)
-	fmt.Println(bobPubKey)
 
 	// 本地加密后，上传密文和胶囊
 	fdenc, capsule, err := recrypt.Encrypt(string(fd), myPubKey)
@@ -192,10 +191,6 @@ func shareFile(address, fileID string) bool {
 	xa, err1 := x509.MarshalPKIXPublicKey(rekey.XA)
 	ce, err2 := x509.MarshalPKIXPublicKey(rekey.Capsule.E)
 	cv, err3 := x509.MarshalPKIXPublicKey(rekey.Capsule.V)
-
-	fmt.Println("xa", xa, " ", tools.ByteToString(xa))
-	fmt.Println("ce", ce, " ", tools.ByteToString(ce))
-	fmt.Println("cv", cv, " ", tools.ByteToString(cv))
 
 	if err1 != nil || err2 != nil || err3 != nil {
 		fmt.Println(err1, err2, err3)
