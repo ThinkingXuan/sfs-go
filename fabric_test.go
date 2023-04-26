@@ -6,8 +6,10 @@ import (
 	"sfs-go/cmd"
 	"sfs-go/internal/fabric/fabservice"
 	"sfs-go/internal/fabric/sdkInit"
+	"sfs-go/internal/file"
 	"sfs-go/internal/tools"
 	"testing"
+	"time"
 )
 
 func TestFabricConn(t *testing.T) {
@@ -153,4 +155,21 @@ func TestJSON(t *testing.T) {
 		fmt.Println(err)
 	}
 	fmt.Println(stu2)
+}
+
+func TestWrite(t *testing.T) {
+
+	type student struct {
+		Name string `json:"name"`
+	}
+
+	now := time.Now()
+	var stu = student{"7b224964223a226175746831222c224174747273223a5b2261757468313a6174312061757468313a617432225d7d"}
+	stuBytes, err := json.Marshal(stu)
+	if err != nil {
+		fmt.Println(err)
+	}
+	file.WriteWithFile("test.txt", string(stuBytes))
+
+	fmt.Println(time.Since(now))
 }

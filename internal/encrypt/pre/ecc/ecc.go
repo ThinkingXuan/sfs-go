@@ -69,7 +69,7 @@ func (ecc ECC) GenerateECCKey(keySize int) error {
 		Type:  "ecdsa private key",
 		Bytes: derText,
 	}
-	file, err := os.Create(ecc.dir + "eccPrivate.pem")
+	file, err := os.Create(ecc.dir + "224.pem")
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
 		return util.Error(file, line+1, err.Error())
@@ -87,7 +87,7 @@ func (ecc ECC) GenerateECCKey(keySize int) error {
 		Type:  "ecdsa public key",
 		Bytes: derText,
 	}
-	file, err = os.Create(ecc.dir + "eccPublic.pem")
+	file, err = os.Create(ecc.dir + "224_p.pem")
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
 		return util.Error(file, line+1, err.Error())
@@ -108,7 +108,7 @@ func (ecc ECC) GenerateECCKey(keySize int) error {
 // 返回 密文 错误
 func (ecc ECC) EccEncrypt(plainText []byte) ([]byte, error) {
 
-	pubKeyPemPath := path.Join(ecc.dir, "eccPublic.pem")
+	pubKeyPemPath := path.Join(ecc.dir, "224_p.pem")
 	// get pem.Block
 	block, err := util.GetKey(pubKeyPemPath)
 	if err != nil {
@@ -139,7 +139,7 @@ func (ecc ECC) EccEncrypt(plainText []byte) ([]byte, error) {
 // filePath 私钥文件路径
 // 返回 明文 错误
 func (ecc ECC) EccDecrypt(cipherText []byte) (plainText []byte, err error) {
-	priKeyPemPath := path.Join(ecc.dir, "eccPrivate.pem")
+	priKeyPemPath := path.Join(ecc.dir, "224.pem")
 	// get pem.Block
 	block, err := util.GetKey(priKeyPemPath)
 	if err != nil {
@@ -162,7 +162,7 @@ func (ecc ECC) EccDecrypt(cipherText []byte) (plainText []byte, err error) {
 // priPath 私钥路径
 // 返回 签名结果
 func (ecc ECC) ECCSign(plainText []byte) ([]byte, []byte, error) {
-	priKeyPemPath := path.Join(ecc.dir, "eccPrivate.pem")
+	priKeyPemPath := path.Join(ecc.dir, "224.pem")
 	// get pem.Block
 	block, err := util.GetKey(priKeyPemPath)
 	if err != nil {
@@ -202,7 +202,7 @@ func (ecc ECC) ECCSign(plainText []byte) ([]byte, []byte, error) {
 // pubPath公钥文件路径
 // 返回 验签结果 错误
 func (ecc ECC) ECCVerify(plainText, rText, sText []byte) (bool, error) {
-	pubKeyPemPath := path.Join(ecc.dir, "eccPublic.pem")
+	pubKeyPemPath := path.Join(ecc.dir, "224_p.pem")
 	// get pem.Block
 	block, err := util.GetKey(pubKeyPemPath)
 	if err != nil {
@@ -236,14 +236,14 @@ func (ecc ECC) ECCVerify(plainText, rText, sText []byte) (bool, error) {
 }
 
 func (ecc ECC) GetECCPublicKey() ([]byte, error) {
-	bytes, err := file.ReadFileBytes("config/eccPublic.pem")
+	bytes, err := file.ReadFileBytes("config/224_p.pem")
 	return bytes, err
 }
 
 // GetAddress 获取地址
 func (ecc ECC) GetAddress() (address string) {
 
-	pubKeyPemPath := path.Join(ecc.dir, "eccPublic.pem")
+	pubKeyPemPath := path.Join(ecc.dir, "224_p.pem")
 	// get pem.Block
 	block, err := util.GetKey(pubKeyPemPath)
 	if err != nil {

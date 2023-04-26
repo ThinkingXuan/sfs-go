@@ -2,6 +2,7 @@ package tools
 
 import (
 	"encoding/hex"
+	"fmt"
 	"sfs-go/internal/file"
 )
 
@@ -12,7 +13,10 @@ func ByteToString(b []byte) (s string) {
 
 // StringToByte 十六进制字符串转换为字节数组
 func StringToByte(s string) []byte {
-	b, _ := hex.DecodeString(s)
+	b, err := hex.DecodeString(s)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return b
 }
 

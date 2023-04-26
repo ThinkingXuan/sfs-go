@@ -71,7 +71,7 @@ func TestGetAddress(t *testing.T) {
 
 func TestGetPukey(t *testing.T) {
 	// get pem.Block
-	block, err := util.GetKey("./eccPublic.pem")
+	block, err := util.GetKey("./224_p.pem")
 	if err != nil {
 		log.Println(err)
 	}

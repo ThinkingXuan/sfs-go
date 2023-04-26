@@ -7,16 +7,28 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"golang.org/x/crypto/ripemd160"
 	"math/big"
 	"os"
 	"path"
 	"runtime"
-	"sfs-go/internal/encrypt/errors"
 	"sfs-go/internal/encrypt/util"
 	"sfs-go/internal/file"
+	"sfs-go/internal/tools"
+	"strings"
 )
+
+var DesKeyError = "key size should be 8"
+var DesIvError = "IV size should be 8"
+var TripleDesKeyError = "key size should be 24"
+var AesKeyError = "key size should be 16, 24 or 32"
+var AesIvError = "IV size should be 16, 24 or 32"
+var RsatransError = "error occur when trans to *rsa.Publickey"
+
+//var RsaNilError = "error occur when decrypt"
+var EcckeyError = "key size should be 224 256 384 521"
 
 // ECC ECC结构
 type ECC struct {
@@ -26,6 +38,131 @@ type ECC struct {
 // NewECC 创建一个ECC, dir公私钥所在路径
 func NewECC(dir string) *ECC {
 	return &ECC{dir: dir}
+}
+
+// GenerateECC 通过随机密钥的来产生ECC的公私钥并保存，随机密钥的长度来决定曲线的复杂性。
+// randkey >=36   P224曲线
+// randkey >=40   P256曲线
+// randkey >=56   P384曲线
+// randkey >=73   P521曲线
+// 这样做的原因事保存randkey来方法注记词的构建
+//
+func (ecc ECC) GenerateECC(keySize int, wordList []string) error {
+
+	randkey := ""
+	randKeySize := 0
+	fillSize := 0 // 需要填充的二进制位数
+	// randKey不为空，取恢复随机密钥
+	if len(wordList) > 0 {
+		// 恢复随机密钥
+		if len(wordList) == 27 {
+			randkey = tools.GetRandKey(wordList, 9)
+		} else if len(wordList) == 30 {
+			randkey = tools.GetRandKey(wordList, 10)
+		} else if len(wordList) == 41 {
+			randkey = tools.GetRandKey(wordList, 3)
+		} else if len(wordList) == 54 {
+			randkey = tools.GetRandKey(wordList, 10)
+		} else {
+			return errors.New("word list error")
+		}
+		randKeySize = len(randkey)
+	} else {
+		//自己生成
+		if !(keySize == 224 || keySize == 256 || keySize == 384 || keySize == 521) {
+			return errors.New("key not null")
+		}
+
+		switch keySize {
+		case 224:
+			randKeySize = 224/8 + 8 //36 288 9
+			fillSize = 9
+		case 256:
+			randKeySize = 256/8 + 8 //40 320 10
+			fillSize = 10
+		case 384:
+			randKeySize = 384/8 + 8 //56 448 3
+			fillSize = 3
+		case 521:
+			randKeySize = 521/8 + 8 //73 584 10
+			fillSize = 10
+		}
+		randkey = tools.FillRandKey(randKeySize)
+	}
+
+	// 根据随机密匙的长度创建私匙
+	var curve elliptic.Curve
+	if randKeySize >= 73 {
+		curve = elliptic.P521()
+	} else if randKeySize >= 56 {
+		curve = elliptic.P384()
+	} else if randKeySize >= 40 {
+		curve = elliptic.P256()
+	} else if randKeySize >= 36 {
+		curve = elliptic.P224()
+	}
+	// 生成私匙
+	priKey, err := ecdsa.GenerateKey(curve, strings.NewReader(randkey+"0"))
+	if err != nil {
+		return errors.New("generate key error:" + err.Error())
+	}
+
+	if priKey == nil {
+		_, file, line, _ := runtime.Caller(0)
+		return util.Error(file, line+1, EcckeyError)
+	}
+	if err != nil {
+		_, file, line, _ := runtime.Caller(0)
+		return util.Error(file, line+1, err.Error())
+	}
+	// x509
+	derText, err := x509.MarshalECPrivateKey(priKey)
+	if err != nil {
+		_, file, line, _ := runtime.Caller(0)
+		return util.Error(file, line+1, err.Error())
+	}
+	// pem block
+	block := &pem.Block{
+		Type:  "ecdsa private key",
+		Bytes: derText,
+	}
+	f, err := os.Create(ecc.dir + "eccPrivate.pem")
+	if err != nil {
+		_, file, line, _ := runtime.Caller(0)
+		return util.Error(file, line+1, err.Error())
+	}
+	err = pem.Encode(f, block)
+	if err != nil {
+		_, file, line, _ := runtime.Caller(0)
+		return util.Error(file, line+1, err.Error())
+	}
+	f.Close()
+	// public key
+	pubKey := priKey.PublicKey
+	derText, err = x509.MarshalPKIXPublicKey(&pubKey)
+	block = &pem.Block{
+		Type:  "ecdsa public key",
+		Bytes: derText,
+	}
+	f, err = os.Create(ecc.dir + "eccPublic.pem")
+	if err != nil {
+		_, file, line, _ := runtime.Caller(0)
+		return util.Error(file, line+1, err.Error())
+	}
+	err = pem.Encode(f, block)
+	if err != nil {
+		_, file, line, _ := runtime.Caller(0)
+		return util.Error(file, line+1, err.Error())
+	}
+	f.Close()
+
+	// 生成并保存注记词
+	if len(wordList) <= 0 {
+		wordList := tools.GetWordList(randkey, fillSize)
+		wordListStr := strings.Join(wordList, " ")
+		file.WriteWithFile(ecc.dir+"WordList", wordListStr)
+	}
+	return nil
 }
 
 // GenerateECCKey
@@ -51,7 +188,7 @@ func (ecc ECC) GenerateECCKey(keySize int) error {
 	}
 	if priKey == nil {
 		_, file, line, _ := runtime.Caller(0)
-		return util.Error(file, line+1, errors.EcckeyError)
+		return util.Error(file, line+1, EcckeyError)
 	}
 	if err != nil {
 		_, file, line, _ := runtime.Caller(0)
@@ -123,7 +260,7 @@ func (ecc ECC) EccEncrypt(plainText []byte) ([]byte, error) {
 	publicKey, flag := publicInterface.(*ecdsa.PublicKey)
 	if flag == false {
 		_, file, line, _ := runtime.Caller(0)
-		return nil, util.Error(file, line+1, errors.RsatransError)
+		return nil, util.Error(file, line+1, RsatransError)
 	}
 	cipherText, err := ecies.Encrypt(rand.Reader, util.PubEcdsaToEcies(publicKey), plainText, nil, nil)
 	if err != nil {

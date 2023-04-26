@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"sfs-go/internal/encrypt/util"
+	"sfs-go/internal/file"
+	"strings"
 	"testing"
 )
 
@@ -86,4 +88,30 @@ func TestGetPukey(t *testing.T) {
 	// assert
 	pubKey := pubInter.(*ecdsa.PublicKey)
 	log.Println(pubKey)
+}
+
+func TestECC_GenerateECC(t *testing.T) {
+	ecc := NewECC("./")
+	wordListStr := file.ReadWithFile("WordList")
+	wordList := strings.Split(wordListStr, " ")
+	err := ecc.GenerateECC(521, wordList)
+	if err != nil {
+		fmt.Println(err)
+	}
+	////os.Exit(0)
+	//err = ecc.GenerateECCKey(256)
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	////os.Exit(0)
+	//err = ecc.GenerateECCKey(384)
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+	////os.Exit(0)
+	//err = ecc.GenerateECCKey(512)
+	//if err != nil {
+	//	fmt.Println(err)
+	//}
+
 }
