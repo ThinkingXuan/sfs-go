@@ -15,16 +15,30 @@ func TestDes(t *testing.T) {
 	message := "this is a message"
 
 	// encrypt
-	cipherText, err := des.DESEncrypt([]byte(message), key)
-	if err != nil {
-		t.Fatal("Aes encrypt failure:", err)
-	}
+	cipherText := des.DESEncrypt([]byte(message), key)
 
 	// decrypt
-	plainText, err := des.DESDecrypt(cipherText, key)
-	if err != nil {
-		t.Fatal("Aes decrypt failure:", err)
-	}
+	plainText := des.DESDecrypt(cipherText, key)
+
+	// compare
+	assert.Equal(t, string(plainText), message)
+
+}
+
+func Test3Des(t *testing.T) {
+	// create a new Des struct
+	des := NewDes()
+
+	// generate a secret key
+	key := []byte("2fa6c1e92fa6c1e92fa6c1e9")
+	// create a message to be encrypted
+	message := "this is a message"
+
+	// encrypt
+	cipherText := des.DES3Encrypt([]byte(message), key)
+
+	// decrypt
+	plainText := des.DES3Decrypt(cipherText, key)
 
 	// compare
 	assert.Equal(t, string(plainText), message)
