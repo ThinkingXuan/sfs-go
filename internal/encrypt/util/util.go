@@ -100,7 +100,7 @@ func PriEcdsaToEcies(prv *ecdsa.PrivateKey) *ecies.PrivateKey {
 }
 
 func GetPubKey(dir string) (*ecdsa.PublicKey, error) {
-	pubKeyPemPath := path.Join(dir, "224_p.pem")
+	pubKeyPemPath := path.Join(dir, "eccPublic.pem")
 	// get pem.Block
 	block, err := util.GetKey(pubKeyPemPath)
 	if err != nil {
@@ -118,7 +118,7 @@ func GetPubKey(dir string) (*ecdsa.PublicKey, error) {
 }
 
 func GetPriKey(dir string) (*ecdsa.PrivateKey, error) {
-	priKeyPemPath := path.Join(dir, "224.pem")
+	priKeyPemPath := path.Join(dir, "eccPrivate.pem")
 	// get pem.Block
 	block, err := util.GetKey(priKeyPemPath)
 	if err != nil {

@@ -16,9 +16,6 @@ const (
 	AES256
 	DES
 	ThreeDES
-	RC2
-	RC4
-	RC5
 )
 
 func GenerateEncryptionMethod(filePath string, securityAttr int) int {
@@ -39,7 +36,7 @@ func dynamicCalculate(filePath string, securityAttr int) int {
 		}
 	case confidential:
 		if filesize >= 0 && filesize <= 100 {
-			return AES256
+			return AES128
 		} else if filesize <= 500 {
 			return AES192
 		} else {
