@@ -24,7 +24,7 @@ Secure file sharing system based on blockchain 基于区块链的安全文件共
 go run -o sfs main.go
 ```
 
-# 功能：
+# 功能
 
 - 初始化
 ```shell

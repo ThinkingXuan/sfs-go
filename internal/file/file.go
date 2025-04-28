@@ -29,6 +29,7 @@ func DownFile(fileHash string) ([]byte, error) {
 
 // UploadFileToIPFS 上传文件到IPFS
 func UploadFileToIPFS(fileBytes []byte) (string, error) {
+
 	iPAddr := viper.GetString("ipfs_ip")
 	sh := shell.NewShell(iPAddr + ":5001")
 

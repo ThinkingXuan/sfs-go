@@ -160,22 +160,22 @@ func (t *ServiceSetup) InsertAbeAuthPK(address string, authPK []byte) ([]byte, e
 	return response.Payload, nil
 }
 
-func (t *ServiceSetup) QueryAbeAuthPK(address string) ([]byte, error) {
-	newAddress := address + "3"
-	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "query_abe_auth_pk", Args: [][]byte{[]byte(newAddress)}}
-	response, err := t.Client.Query(req)
-	if err != nil {
-		return []byte{0x00}, err
-	}
-	return response.Payload, nil
-}
-
 func (t *ServiceSetup) InsertAbeShareAddressFile(address string, fileID string, fdenc string) ([]byte, error) {
 	newAddress := address + "1"
 	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "insert_abe_share_address_file", Args: [][]byte{[]byte(newAddress), []byte(fileID), []byte(fdenc)}}
 	response, err := t.Client.Execute(req)
 	if err != nil {
 		return []byte{}, err
+	}
+	return response.Payload, nil
+}
+
+func (t *ServiceSetup) QueryAbeAuthPK(address string) ([]byte, error) {
+	newAddress := address + "3"
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "query_abe_auth_pk", Args: [][]byte{[]byte(newAddress)}}
+	response, err := t.Client.Query(req)
+	if err != nil {
+		return []byte{0x00}, err
 	}
 	return response.Payload, nil
 }

@@ -5,12 +5,6 @@ type PublicKey struct {
 	PK string `json:"pk"`
 }
 
-// AddressFile address receive files
-type AddressFile struct {
-	FileEncrypt []EncryptEntity `json:"file_encrypt,omitempty"`
-	Files       []File          `json:"files,omitempty"`
-}
-
 type EncryptEntity struct {
 	FileID            string `json:"file_id"`
 	FileEncryptCipher string `json:"file_encrypt_cipher"`
@@ -22,6 +16,12 @@ type EncryptEntity struct {
 	CapsuleBintSign string `json:"capsule_bint_sign"`
 	Fdenc           string `json:"fdenc"`
 	IsABEShare      string `json:"is_abe_share"`
+}
+
+// AddressFile address receive files
+type AddressFile struct {
+	FileEncrypt []EncryptEntity `json:"file_encrypt,omitempty"`
+	Files       []File          `json:"files,omitempty"`
 }
 
 // File file info

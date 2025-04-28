@@ -13,6 +13,7 @@ func ByteToString(b []byte) (s string) {
 
 // StringToByte 十六进制字符串转换为字节数组
 func StringToByte(s string) []byte {
+
 	b, err := hex.DecodeString(s)
 	if err != nil {
 		fmt.Println(err)

@@ -23,13 +23,6 @@ type RekeySerialize struct {
 	CapsuleBintSign string `json:"capsule_bint_sign"`
 }
 
-type ReKey struct {
-	Fdenc   []byte           `json:"fdenc"`
-	Rk      *big.Int         `json:"rk"`
-	XA      *ecdsa.PublicKey `json:"xa"`
-	Capsule *recrypt.Capsule `json:"capsule"`
-}
-
 type EncryptEntity struct {
 	FileID            string `json:"file_id"`
 	FileEncryptCipher string `json:"file_encrypt_cipher"`
@@ -40,6 +33,13 @@ type EncryptEntity struct {
 	CapsuleBint     string `json:"capsule_bint"`
 	CapsuleBintSign string `json:"capsule_bint_sign"`
 	Fdenc           string `json:"fdenc"`
+}
+
+type ReKey struct {
+	Fdenc   []byte           `json:"fdenc"`
+	Rk      *big.Int         `json:"rk"`
+	XA      *ecdsa.PublicKey `json:"xa"`
+	Capsule *recrypt.Capsule `json:"capsule"`
 }
 
 func main() {
