@@ -111,6 +111,16 @@ func TestFabricQueryAttrsAndID(t *testing.T) {
 	fmt.Println(string(pkBytes))
 }
 
+func TestFabricDownloadAttrsAndID(t *testing.T) {
+	service := sdkInit.GetInstance().InitFabric()
+
+	pkBytes, err := service.QueryAbeAttrsAndId("sdfdsfdsf")
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(string(pkBytes))
+}
+
 func TestFabricInsertAuthPK(t *testing.T) {
 	service := sdkInit.GetInstance().InitFabric()
 

@@ -33,9 +33,6 @@ func TestName(t *testing.T) {
 		0x7A, 0x3D, 0x5F, 0x06, 0x41, 0x9B, 0x3F, 0x2D,
 	}
 
-
-
-
 	//startEncrpt := time.Now()
 	//for i := 0; i < 1000; i++ {
 	//
@@ -56,8 +53,6 @@ func TestName(t *testing.T) {
 
 	fmt.Printf("encrypt file size: %d\n", len(cipherText))
 
-
-
 	startDecrpt := time.Now()
 	for i := 0; i < 1000; i++ {
 		// decrypt
@@ -73,7 +68,6 @@ func Test11111(t *testing.T) {
 
 	fileBytes, _ := file.ReadFileBytes("CIQNFPFKXWIL6JXF4UBNVKV7HZ3BCF34RSD4QV3X4EAKEWKMV6YY6TI.hex")
 	//fileBytes, _ := file.ReadFileBytes("CIQP43Z76C75PGHHW2BTQIHG6SPTUYVFF6SCIC7XKCXMTLKRVAIV2EA.hex")
-
 
 	// create a new AES struct
 	aes := encrypt.NewAes()
@@ -92,6 +86,6 @@ func Test11111(t *testing.T) {
 		t.Fatal("Aes encrypt failure")
 	}
 
-	test, err := aes.AESDecrypt(cipherText,key)
+	test, err := aes.AESDecrypt(cipherText, key)
 	fmt.Println(string(test))
 }
