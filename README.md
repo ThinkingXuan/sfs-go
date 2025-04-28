@@ -17,3 +17,36 @@ Secure file sharing system based on blockchain 基于区块链的安全文件共
    - 正式Fabric环境的搭建 ✔
    - Fabric-SDK-Go集成 ✔
    - 合约调用 ✔
+
+# 编译
+
+```shell
+go run -o sfs main.go
+```
+
+# 功能：
+
+- 初始化
+```shell
+./sfs init
+```
+
+- 上传
+```shell
+./sfs upload -p 文件路径
+```
+
+- 展示
+```shell
+./sfs show 
+```
+
+- 分享
+```shell
+./sfs share -i  文件ID  -a 文件接收方地址
+```
+
+- 下载
+```shell
+./sfs download -i 文件ID  -d 文件存储路径
+```

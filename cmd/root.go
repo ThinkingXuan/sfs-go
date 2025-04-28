@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -9,16 +8,7 @@ import (
 	"os"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "bf",
-	Short: "bfshell is a multi-dimensional security tool for file sharing.",
-	Long: `bfshell is a multi-dimensional security tool for file sharing based on blockchain and IPFS. 
-It has file sharing and fine-grained permission control and other functions to ensure 
-the maximum security of the file.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		Error(cmd, args, errors.New("unrecognized command"))
-	},
-}
+var rootCmd = &cobra.Command{}
 
 // Execute execute root cmd
 func Execute() {
